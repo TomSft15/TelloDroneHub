@@ -1,0 +1,55 @@
+# Dossiers et fichiers de l'environnement virtuel
+venv/
+env/
+.venv/
+ENV/
+
+# Fichiers de configuration et caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Dossiers de logs et fichiers temporaires
+logs/
+*.log
+*.tmp
+
+# Configurations de l'IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers de test et couverture de test
+.tox/
+.nox/
+.coverage
+*.cover
+coverage.xml
+*.pytest_cache/
+
+# Fichiers générés par MyPy, Pylint, et autres outils d'analyse
+.mypy_cache/
+.pyre/
+.pytype/
+.pylint.d/
+
+# Données temporaires et fichiers de compilation
+*.db
+*.sqlite3
+*.bak
+.DS_Store
+Thumbs.db
+
+# Clés API, configurations sensibles
+*.env
+.env.*
+
+# Fichiers Python compilés
+*.so
+*.pyd
+
+# Dossiers spécifiques au déploiement
+dist/
+build/
+*.egg-info/
