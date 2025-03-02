@@ -1,0 +1,5 @@
+1. Décollage        Attérissage
+2. Avance           Recule              Gauche              Droite
+3. Monte            Descend             Tourne à Gauche     Tourne à Droite
+4. Looping en avant Lopping en arrière  Lopping à Gauche    Looping à Droite
+5. Stop
