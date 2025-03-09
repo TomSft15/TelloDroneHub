@@ -1,57 +1,48 @@
-
 class Commands:
     def __init__(self, drone):
         self.drone = drone
         
-    def takeoff(drone):
-        drone.takeoff()
+    def takeoff(self):
+        self.drone.takeoff()
         
-    def land(drone):
-        drone.land()
+    def land(self):
+        self.drone.land()
         
-    def stop(drone):
-        drone.emergency()
+    def stop(self):
+        self.drone.emergency()
     
-    def forward(drone):
-        rc_control = [0, 50, 0, 0]
-        return rc_control
+    def forward(self):
+        return [0, 50, 0, 0]
 
-    def backward(drone):
-        rc_control = [0, -50, 0, 0]
-        return rc_control
+    def backward(self):
+        return [0, -50, 0, 0]
         
-    def left(drone):
-        rc_control = [-50, 0, 0, 0]
-        return rc_control
+    def left(self):
+        return [-50, 0, 0, 0]
 
-    def right(drone):
-        rc_control = [50, 0, 0, 0]
-        return rc_control
+    def right(self):
+        return [50, 0, 0, 0]
         
-    def up(drone):
-        rc_control = [0, 0, 50, 0]
-        return rc_control
+    def up(self):
+        return [0, 0, 50, 0]
 
-    def down(drone):
-        rc_control = [0, 0, -50, 0]
-        return rc_control
+    def down(self):
+        return [0, 0, -50, 0]
 
-    def rotateLeft(drone):
-        rc_control = [0, 0, 0, -50]
-        return rc_control
+    def rotateLeft(self):
+        return [0, 0, 0, -50]
 
-    def rotateRight(drone):
-        rc_control = [0, 0, 0, 50]
-        return rc_control
+    def rotateRight(self):
+        return [0, 0, 0, 50]
 
-    def flipLeft(drone):
-        drone.flip_left()
+    def flipLeft(self):
+        self.drone.flip_left()
 
-    def flipRight(drone):
-        drone.flip_right()
+    def flipRight(self):
+        self.drone.flip_right()
 
-    def flipForward(drone):
-        drone.flip_forward()
+    def flipForward(self):
+        self.drone.flip_forward()
 
-    def flipBackward(drone):
-        drone.flip_backward()
+    def flipBackward(self):
+        self.drone.flip_backward()
