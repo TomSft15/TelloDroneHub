@@ -11,6 +11,9 @@ const droneRoutes = require('./routes/drones');
 const userRoutes = require('./routes/users');
 const mediaRoutes = require('./routes/media');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger/swagger.js');
+
 const app = express();
 
 // Middlewares
@@ -25,6 +28,9 @@ app.use(express.urlencoded({ extended: false }));
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Swagger API documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Static folder for media
 app.use('/uploads', express.static('uploads'));

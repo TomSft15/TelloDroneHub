@@ -18,6 +18,11 @@
             </div>
           </div>
           <div class="camera-content">
+            <img v-if="images.length > 0" :src="images[0].src" alt="Live feed">
+            <div v-else class="empty-camera">
+              <i class="fas fa-video-slash"></i>
+              <p>Flux vidéo non disponible</p>
+            </div>
             <div class="camera-overlay">
               <div class="overlay-item altitude">300m</div>
               <div class="overlay-item speed">15m/s</div>
@@ -95,6 +100,10 @@
             </button>
           </div>
           <div class="map-container">
+            <img v-if="images.length > 0" :src="images[images.length > 1 ? 1 : 0].src" alt="Map" class="map-image">
+            <div v-else class="empty-map">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
             <div class="map-marker drone-marker">
               <i class="fas fa-drone-alt"></i>
             </div>
@@ -120,13 +129,12 @@
             <button class="btn-text">Voir toutes <i class="fas fa-chevron-right"></i></button>
           </div>
           <div class="photo-grid">
-            <div class="photo-item">
+            <div v-for="(image, index) in images.slice(0, 4)" :key="index" class="photo-item">
+              <img :src="image.src" :alt="image.name">
             </div>
-            <div class="photo-item">
-            </div>
-            <div class="photo-item">
-            </div>
-            <div class="photo-item">
+            <!-- Éléments de remplissage si moins de 4 images -->
+            <div v-for="index in Math.max(0, 4 - images.length)" :key="`empty-${index}`" class="photo-item empty-photo">
+              <i class="fas fa-image"></i>
             </div>
           </div>
         </div>
@@ -135,10 +143,31 @@
   </template>
   
   <script>
-  export default {
-    name: 'DashboardView'
-  };
-  </script>
+export default {
+  name: 'DashboardViewPage',
+  data() {
+    return {
+      images: []
+    }
+  },
+  mounted() {
+    this.loadImages();
+  },
+  methods: {
+    loadImages() {
+      // Utilisation de l'API require.context de webpack pour charger les images
+      const requireImages = require.context('@/assets/images', false, /\.(png|jpe?g|gif|webp)$/);
+      this.images = requireImages.keys().map(key => {
+        return {
+          src: requireImages(key),
+          name: key.replace('./', '')
+        }
+      });
+    }
+  }
+};
+</script>
+
   
   <style scoped>
   .dashboard-container {
@@ -193,6 +222,47 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 1.5rem;
+  }
+
+  .empty-photo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-gray);
+    color: var(--medium-gray);
+    font-size: 2rem;
+  }
+
+  .empty-camera {
+    background-color: var(--light-gray);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--dark-gray);
+    font-size: 2rem;
+  }
+
+  .empty-camera p {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .empty-map {
+    background-color: var(--light-gray);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--medium-gray);
+    font-size: 2rem;
+  }
+
+  .map-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   
   .grid-item {

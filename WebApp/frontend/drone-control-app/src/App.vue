@@ -5,7 +5,7 @@
       <router-view />
     </main>
     <footer class="app-footer">
-      <p>© 2023 Drone Control System | Conçu avec ❤️ pour les pilotes</p>
+      <p>© 2025 Drone Control System | Conçu avec ❤️ pour les pilotes</p>
     </footer>
   </div>
 </template>

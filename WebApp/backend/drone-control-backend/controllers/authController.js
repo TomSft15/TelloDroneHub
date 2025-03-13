@@ -12,7 +12,7 @@ exports.register = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Check if user already exists
     let user = await User.findOne({ email });
@@ -21,7 +21,7 @@ exports.register = async (req, res, next) => {
     }
 
     // Create user
-    user = await User.create({ name, email, password });
+    user = await User.create({ name, email, password, role });
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
