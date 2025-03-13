@@ -20,23 +20,29 @@
             <button class="btn-icon" @click="takePhoto"><i class="fas fa-camera"></i></button>
           </div>
         </div>
-        <div class="camera-content" ref="videoContainer">
-          <img v-if="isConnected" :src="videoUrl" alt="Live feed" @error="handleVideoError">
-          <div v-else class="empty-camera">
-            <i class="fas fa-video-slash"></i>
-            <p>Flux vidéo non disponible</p>
-          </div>
-          <div class="camera-overlay">
-            <div class="overlay-item altitude">{{ droneData.height }}m</div>
-            <div class="overlay-item speed">{{ droneData.speed }}m/s</div>
-            <div class="overlay-item recording">
-              <i class="fas fa-circle text-danger"></i> REC 00:03:45
+          <div class="camera-content" ref="videoContainer">
+            <img v-if="isConnected" :src="videoUrl" alt="Live feed" @error="handleVideoError">
+            <div v-else class="empty-camera">
+              <i class="fas fa-video-slash"></i>
+              <p>Flux vidéo non disponible</p>
+              <button v-if="!isConnected" @click="connectDrone" class="connect-btn">
+                <i class="fas fa-plug"></i> Connecter au drone
+              </button>
+              <button v-else @click="refreshVideo" class="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Rafraîchir le flux
+              </button>
             </div>
-            <div class="overlay-item battery">
-              <i class="fas fa-battery-half"></i> {{ droneData.battery }}%
+            <div class="camera-overlay">
+              <div class="overlay-item altitude">{{ droneData.height }}m</div>
+              <div class="overlay-item speed">{{ droneData.speed }}m/s</div>
+              <div v-if="isRecording" class="overlay-item recording">
+                <i class="fas fa-circle text-danger"></i> REC {{ recordingTime }}
+              </div>
+              <div class="overlay-item battery">
+                <i class="fas fa-battery-half"></i> {{ droneData.battery }}%
+              </div>
             </div>
           </div>
-        </div>
       </div>
 
       <div class="drone-controls grid-item">
@@ -171,7 +177,15 @@ export default {
       images: [], // Images statiques chargées
       capturedImages: [], // Images capturées durant la session
       dataUpdateInterval: null,
-      consecutiveErrors: 0
+      consecutiveErrors: 0,
+      isConnected: false,
+      videoUrl: `${API_URL}/video/feed`,
+      videoErrorCount: 0,
+      maxVideoErrors: 3,
+      isRecording: false,
+      recordingTime: '00:00',
+      recordingInterval: null,
+      recordingStartTime: 0
     }
   },
   mounted() {
@@ -257,7 +271,7 @@ export default {
       // Récupérer régulièrement les données du drone
       this.dataUpdateInterval = setInterval(async () => {
         try {
-          const response = await axios.get(`${API_URL}/drone_data`);
+          const response = await axios.get(`${API_URL}/status/drone_data`);
           this.droneData = response.data;
           this.consecutiveErrors = 0; // Réinitialiser le compteur d'erreurs
         } catch (error) {
@@ -369,6 +383,69 @@ export default {
       // Pour l'instant, retournons une valeur simulée basée sur la vitesse et le temps de vol
       const distance = this.droneData.speed * this.droneData.flight_time * 0.3;
       return Math.round(distance);
+    },
+
+    handleVideoError() {
+      console.warn("Erreur dans le chargement du flux vidéo, tentative de reconnexion...");
+      this.videoErrorCount++;
+      
+      // Si trop d'erreurs consécutives, considérer que la vidéo n'est pas disponible
+      if (this.videoErrorCount > this.maxVideoErrors) {
+        console.error("Impossible de charger le flux vidéo après plusieurs tentatives");
+      } else {
+        // Attendre un peu avant de réessayer
+        setTimeout(() => {
+          this.refreshVideo();
+        }, 2000);
+      }
+    },
+    
+    refreshVideo() {
+      // Force le rafraîchissement du flux vidéo avec un timestamp pour éviter la mise en cache
+      this.videoUrl = `${API_URL}/video/feed?timestamp=${new Date().getTime()}`;
+      // Réinitialiser le compteur d'erreurs si la vidéo se charge correctement
+      this.videoErrorCount = 0;
+    },
+    
+    toggleRecording() {
+      if (this.isRecording) {
+        this.stopRecording();
+      } else {
+        this.startRecording();
+      }
+    },
+    
+    startRecording() {
+      if (!this.isConnected) return;
+      
+      this.isRecording = true;
+      this.recordingStartTime = Date.now();
+      
+      // Mettre à jour le compteur de temps d'enregistrement
+      this.recordingInterval = setInterval(() => {
+        const elapsedSeconds = Math.floor((Date.now() - this.recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+        const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+        this.recordingTime = `${minutes}:${seconds}`;
+      }, 1000);
+      
+      // Envoyer la commande au backend si nécessaire
+      // axios.get(`${API_URL}/video/start_recording`);
+    },
+    
+    stopRecording() {
+      if (!this.isRecording) return;
+      
+      this.isRecording = false;
+      clearInterval(this.recordingInterval);
+      const finalRecordingTime = this.recordingTime;
+      this.recordingTime = '00:00';
+      
+      // Envoyer la commande au backend si nécessaire
+      // axios.get(`${API_URL}/video/stop_recording`);
+      
+      // Notification de fin d'enregistrement
+      console.log(`Enregistrement terminé: ${finalRecordingTime}`);
     }
   }
 };
@@ -439,20 +516,43 @@ export default {
   }
 
   .empty-camera {
-    background-color: var(--light-gray);
-    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--dark-gray);
-    font-size: 2rem;
+    height: 100%;
+    width: 100%;
+    color: var(--medium-gray);
+    font-size: 3rem;
+    padding: 2rem;
   }
 
   .empty-camera p {
-    font-size: 1rem;
-    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: var(--dark-gray);
   }
+
+  .connect-btn, .refresh-btn {
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .connect-btn:hover, .refresh-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+  }
+
 
   .empty-map {
     background-color: var(--light-gray);
@@ -541,61 +641,70 @@ export default {
   /* Camera Feed */
   .camera-content {
     position: relative;
+    width: 100%;
     height: 100%;
+    min-height: 400px;
+    background-color: #1e1e1e;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
   }
-  
+
   .camera-content img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
   }
   
+
   .camera-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
-  
+
   .overlay-item {
     background-color: rgba(0, 0, 0, 0.6);
     color: white;
     padding: 0.5rem 0.75rem;
     border-radius: var(--border-radius-sm);
-    font-weight: 500;
+    font-weight: 600;
     width: fit-content;
-    font-family: 'Montserrat', sans-serif;
   }
-  
+
   .overlay-item.altitude {
     align-self: flex-start;
   }
-  
+
   .overlay-item.speed {
     align-self: flex-end;
   }
-  
+
   .overlay-item.recording {
     align-self: flex-start;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background-color: rgba(231, 76, 60, 0.8);
+    animation: pulse 2s infinite;
   }
-  
-  .text-danger {
-    color: #e74c3c;
-  }
-  
+
   .overlay-item.battery {
     align-self: flex-end;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .text-danger {
+    color: #e74c3c;
   }
   
   /* Stats */
@@ -842,32 +951,40 @@ export default {
   pointer-events: none;
 }
 
-  
-  /* Responsive */
-  @media screen and (max-width: 1200px) {
-    .dashboard-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-    
-    .large {
-      grid-column: span 2;
-    }
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Responsive */
+@media screen and (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
   }
   
-  @media screen and (max-width: 768px) {
-    .dashboard-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .large {
-      grid-column: span 1;
-    }
-    
-    .dashboard-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
-    }
+  .large {
+    grid-column: span 2;
   }
-  </style>
+}
+
+@media screen and (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .large {
+    grid-column: span 1;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+</style>
   

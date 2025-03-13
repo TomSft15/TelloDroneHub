@@ -230,7 +230,7 @@
         
         try {
             // Appeler l'API pour connecter le drone
-            const response = await axios.get(`${API_URL}/connect`);
+            const response = await axios.get(`${API_URL}/drone/connect`);
             
             if (response.data.success) {
             this.isConnected = true;
@@ -261,7 +261,7 @@
       
       async fetchDroneInfo() {
         try {
-          const response = await axios.get(`${API_URL}/drone_data`);
+          const response = await axios.get(`${API_URL}/status/drone_data`);
           this.droneInfo = {
             battery: response.data.battery || 0,
             temp: response.data.temperature || 0,
@@ -282,7 +282,7 @@
           }
           
           try {
-            const response = await axios.get(`${API_URL}/drone_data`);
+            const response = await axios.get(`${API_URL}/status/drone_data`);
             this.droneInfo = {
               battery: response.data.battery || 0,
               temp: response.data.temperature || 0,
@@ -349,7 +349,7 @@
         if (wasConnected) {
         try {
             // Vérifier l'état actuel du drone
-            const response = await axios.get(`${API_URL}/status`);
+            const response = await axios.get(`${API_URL}/drone/status`);
             if (response.data.connected) {
             this.isConnected = true;
             this.wifiConnected = true;

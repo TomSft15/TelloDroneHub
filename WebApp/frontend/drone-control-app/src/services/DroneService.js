@@ -8,15 +8,15 @@ export default {
   },
   
   getDroneData() {
-    return axios.get(`${API_URL}/drone_data`);
+    return axios.get(`${API_URL}/status/drone_data`);
   },
   
   takeoff() {
-    return axios.get(`${API_URL}/takeoff`);
+    return axios.get(`${API_URL}/drone/takeoff`);
   },
   
   land() {
-    return axios.get(`${API_URL}/land`);
+    return axios.get(`${API_URL}/drone/land`);
   },
   
   move(direction, distance) {

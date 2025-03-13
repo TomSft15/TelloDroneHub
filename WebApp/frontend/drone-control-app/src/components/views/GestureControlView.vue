@@ -4,7 +4,7 @@
         <h1><i class="fas fa-hand-paper"></i> Contrôle Gestuel</h1>
         <p class="page-description">Contrôlez votre drone avec des mouvements de mains captés par votre caméra.</p>
       </div>
-      <ControlMode mode="gesture" />
+      <ControlMode mode="Gesture" />
     </div>
   </template>
   

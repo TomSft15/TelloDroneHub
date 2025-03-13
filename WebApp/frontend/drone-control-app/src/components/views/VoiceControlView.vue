@@ -1,7 +1,7 @@
 <template>
     <div>
       <h1>Voice Control</h1>
-      <ControlMode mode="voice" />
+      <ControlMode mode="Voice" />
     </div>
   </template>
   

@@ -1,7 +1,7 @@
 <template>
     <div>
       <h1>Vision Control</h1>
-      <ControlMode mode="vision" />
+      <ControlMode mode="Vision" />
     </div>
   </template>
   
