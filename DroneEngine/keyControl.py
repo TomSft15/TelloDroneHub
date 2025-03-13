@@ -43,7 +43,7 @@ def executeVoiceCommand(command, commandsClass):
     
     return rc_control
 
-def key_control(drone, commandsClass):
+def key_control(drone, commandsClass=None):
     lr, fb, ud, xy = 0, 0, 0, 0
     x = 50
     
