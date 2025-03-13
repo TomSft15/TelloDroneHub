@@ -1,173 +1,378 @@
 <template>
-    <div class="dashboard-container">
-      <div class="dashboard-header">
-        <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord du drone</h1>
-        <div class="connection-status connected">
-          <span class="status-indicator"></span>
-          <span class="status-text">Connecté</span>
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord du drone</h1>
+      <div class="connection-status" :class="{ connected: isConnected }">
+        <span class="status-indicator"></span>
+        <span class="status-text">{{ isConnected ? 'Connecté' : 'Déconnecté' }}</span>
+        <button v-if="!isConnected" @click="connectDrone" class="btn-connect">
+          Connecter au drone
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="camera-feed grid-item large">
+        <div class="card-header">
+          <h2>Flux vidéo en direct</h2>
+          <div class="controls">
+            <button class="btn-icon" @click="toggleFullscreen"><i class="fas fa-expand-alt"></i></button>
+            <button class="btn-icon" @click="takePhoto"><i class="fas fa-camera"></i></button>
+          </div>
+        </div>
+        <div class="camera-content" ref="videoContainer">
+          <img v-if="isConnected" :src="videoUrl" alt="Live feed" @error="handleVideoError">
+          <div v-else class="empty-camera">
+            <i class="fas fa-video-slash"></i>
+            <p>Flux vidéo non disponible</p>
+          </div>
+          <div class="camera-overlay">
+            <div class="overlay-item altitude">{{ droneData.height }}m</div>
+            <div class="overlay-item speed">{{ droneData.speed }}m/s</div>
+            <div class="overlay-item recording">
+              <i class="fas fa-circle text-danger"></i> REC 00:03:45
+            </div>
+            <div class="overlay-item battery">
+              <i class="fas fa-battery-half"></i> {{ droneData.battery }}%
+            </div>
+          </div>
         </div>
       </div>
-  
-      <div class="dashboard-grid">
-        <div class="camera-feed grid-item large">
-          <div class="card-header">
-            <h2>Flux vidéo en direct</h2>
-            <div class="controls">
-              <button class="btn-icon"><i class="fas fa-expand-alt"></i></button>
-              <button class="btn-icon"><i class="fas fa-camera"></i></button>
-            </div>
+
+      <div class="drone-controls grid-item">
+        <div class="card-header">
+          <h2>Contrôles du drone</h2>
+        </div>
+        <div class="controls-grid">
+          <button @click="sendCommand('takeoff')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-up"></i> Décollage
+          </button>
+          <button @click="sendCommand('land')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-down"></i> Atterrissage
+          </button>
+          <button @click="sendCommand('move/forward/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-up"></i> Avancer
+          </button>
+          <button @click="sendCommand('move/back/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-down"></i> Reculer
+          </button>
+          <button @click="sendCommand('move/left/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-left"></i> Gauche
+          </button>
+          <button @click="sendCommand('move/right/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-right"></i> Droite
+          </button>
+          <button @click="sendCommand('emergency')" :disabled="!isConnected" class="control-btn emergency">
+            <i class="fas fa-exclamation-triangle"></i> Arrêt d'urgence
+          </button>
+        </div>
+      </div>
+
+      <div class="flight-stats grid-item">
+        <div class="card-header">
+          <h2>Statistiques de vol</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-signal"></i></div>
+            <div class="stat-value">{{ droneData.signal }}%</div>
+            <div class="stat-label">Signal</div>
           </div>
-          <div class="camera-content">
-            <img v-if="images.length > 0" :src="images[0].src" alt="Live feed">
-            <div v-else class="empty-camera">
-              <i class="fas fa-video-slash"></i>
-              <p>Flux vidéo non disponible</p>
-            </div>
-            <div class="camera-overlay">
-              <div class="overlay-item altitude">300m</div>
-              <div class="overlay-item speed">15m/s</div>
-              <div class="overlay-item recording"><i class="fas fa-circle text-danger"></i> REC 00:03:45</div>
-              <div class="overlay-item battery">
-                <i class="fas fa-battery-half"></i> 68%
-              </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-battery-three-quarters"></i></div>
+            <div class="stat-value">{{ droneData.battery }}%</div>
+            <div class="stat-label">Batterie</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-temperature-high"></i></div>
+            <div class="stat-value">{{ droneData.temperature }}°C</div>
+            <div class="stat-label">Température</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-value">{{ formatTime(droneData.flight_time) }}</div>
+            <div class="stat-label">Temps de vol</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flight-data grid-item">
+        <div class="card-header">
+          <h2>Données de vol</h2>
+        </div>
+        <div class="data-table">
+          <div class="data-row">
+            <div class="data-label">Altitude</div>
+            <div class="data-value">{{ droneData.height }} m</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label">Vitesse</div>
+            <div class="data-value">{{ droneData.speed }} m/s</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label">Distance</div>
+            <div class="data-value">{{ calculateDistance() }} m</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label">Durée de vol</div>
+            <div class="data-value">{{ formatTime(droneData.flight_time) }}</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label">Mode de vol</div>
+            <div class="data-value">
+              <span class="mode-badge">Manuel</span>
             </div>
           </div>
         </div>
-  
-        <div class="flight-stats grid-item">
-          <div class="card-header">
-            <h2>Statistiques de vol</h2>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-icon"><i class="fas fa-signal"></i></div>
-              <div class="stat-value">98%</div>
-              <div class="stat-label">Signal</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-icon"><i class="fas fa-battery-three-quarters"></i></div>
-              <div class="stat-value">68%</div>
-              <div class="stat-label">Batterie</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-icon"><i class="fas fa-temperature-high"></i></div>
-              <div class="stat-value">32°C</div>
-              <div class="stat-label">Température</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-icon"><i class="fas fa-wind"></i></div>
-              <div class="stat-value">8km/h</div>
-              <div class="stat-label">Vent</div>
-            </div>
-          </div>
+      </div>
+
+      <!-- Conservez les autres éléments de votre grid mais adaptez-les avec les données dynamiques -->
+      
+      <div class="recent-photos grid-item">
+        <div class="card-header">
+          <h2>Photos récentes</h2>
+          <button class="btn-text">Voir toutes <i class="fas fa-chevron-right"></i></button>
         </div>
-  
-        <div class="flight-data grid-item">
-          <div class="card-header">
-            <h2>Données de vol</h2>
+        <div class="photo-grid">
+          <div v-for="(image, index) in capturedImages.slice(0, 4)" :key="index" class="photo-item">
+            <img :src="image.src" :alt="image.name">
           </div>
-          <div class="data-table">
-            <div class="data-row">
-              <div class="data-label">Altitude</div>
-              <div class="data-value">300 m</div>
-            </div>
-            <div class="data-row">
-              <div class="data-label">Vitesse</div>
-              <div class="data-value">15 m/s</div>
-            </div>
-            <div class="data-row">
-              <div class="data-label">Distance</div>
-              <div class="data-value">1.2 km</div>
-            </div>
-            <div class="data-row">
-              <div class="data-label">Durée de vol</div>
-              <div class="data-value">12:45</div>
-            </div>
-            <div class="data-row">
-              <div class="data-label">Mode de vol</div>
-              <div class="data-value">
-                <span class="mode-badge">Auto</span>
-              </div>
-            </div>
-          </div>
-        </div>
-  
-        <div class="gps-location grid-item">
-          <div class="card-header">
-            <h2>Localisation GPS</h2>
-            <button class="btn-icon toggle-map-type">
-              <i class="fas fa-layer-group"></i>
-            </button>
-          </div>
-          <div class="map-container">
-            <img v-if="images.length > 0" :src="images[images.length > 1 ? 1 : 0].src" alt="Map" class="map-image">
-            <div v-else class="empty-map">
-              <i class="fas fa-map-marked-alt"></i>
-            </div>
-            <div class="map-marker drone-marker">
-              <i class="fas fa-drone-alt"></i>
-            </div>
-            <div class="map-marker home-marker">
-              <i class="fas fa-home"></i>
-            </div>
-          </div>
-          <div class="coordinates">
-            <div>
-              <span class="coordinate-label">Latitude</span>
-              <span class="coordinate-value">48.8584° N</span>
-            </div>
-            <div>
-              <span class="coordinate-label">Longitude</span>
-              <span class="coordinate-value">2.2945° E</span>
-            </div>
-          </div>
-        </div>
-  
-        <div class="recent-photos grid-item">
-          <div class="card-header">
-            <h2>Photos récentes</h2>
-            <button class="btn-text">Voir toutes <i class="fas fa-chevron-right"></i></button>
-          </div>
-          <div class="photo-grid">
-            <div v-for="(image, index) in images.slice(0, 4)" :key="index" class="photo-item">
-              <img :src="image.src" :alt="image.name">
-            </div>
-            <!-- Éléments de remplissage si moins de 4 images -->
-            <div v-for="index in Math.max(0, 4 - images.length)" :key="`empty-${index}`" class="photo-item empty-photo">
-              <i class="fas fa-image"></i>
-            </div>
+          <!-- Éléments de remplissage si moins de 4 images -->
+          <div v-for="index in Math.max(0, 4 - capturedImages.length)" :key="`empty-${index}`" class="photo-item empty-photo">
+            <i class="fas fa-image"></i>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+import emitter from '../../eventBus';
+
+const API_URL = 'http://localhost:5000';
+
 export default {
   name: 'DashboardViewPage',
   data() {
     return {
-      images: []
+      isConnected: false,
+      videoUrl: `${API_URL}/video_feed`,
+      videoRefreshKey: 0,
+      droneData: {
+        battery: 0,
+        temperature: 0,
+        flight_time: 0,
+        height: 0,
+        speed: 0,
+        signal: 0
+      },
+      images: [], // Images statiques chargées
+      capturedImages: [], // Images capturées durant la session
+      dataUpdateInterval: null,
+      consecutiveErrors: 0
     }
   },
   mounted() {
-    this.loadImages();
+    // Vérifier l'état de la connexion au chargement
+    this.checkDroneStatus();
+    
+    // Écouter les événements avec l'émetteur
+    emitter.on('drone-connected', () => {
+      this.checkDroneStatus();
+    });
+    
+    emitter.on('drone-disconnected', () => {
+      this.isConnected = false;
+      if (this.dataUpdateInterval) {
+        clearInterval(this.dataUpdateInterval);
+      }
+    });
+  },
+  beforeDestroy() {
+    // Nettoyer les écouteurs d'événements
+    emitter.off('drone-connected');
+    emitter.off('drone-disconnected');
+    
+    // Nettoyer les intervalles
+    if (this.dataUpdateInterval) {
+      clearInterval(this.dataUpdateInterval);
+    }
   },
   methods: {
-    loadImages() {
-      // Utilisation de l'API require.context de webpack pour charger les images
-      const requireImages = require.context('@/assets/images', false, /\.(png|jpe?g|gif|webp)$/);
-      this.images = requireImages.keys().map(key => {
-        return {
-          src: requireImages(key),
-          name: key.replace('./', '')
+    async checkDroneStatus() {
+      try {
+        const response = await axios.get(`${API_URL}/status`);
+        this.isConnected = response.data.connected;
+        if (this.isConnected) {
+          this.droneData = response.data.drone_data;
+          this.startPollingData();
+          this.refreshVideo();
+        } else if (localStorage.getItem('droneConnected') === 'true') {
+          localStorage.removeItem('droneConnected');
         }
-      });
+      } catch (error) {
+        console.error("Erreur lors de la vérification de l'état du drone:", error);
+        this.isConnected = false;
+        localStorage.removeItem('droneConnected');
+      }
+    },
+    
+    async connectDrone() {
+      // Rediriger l'utilisateur vers la page de connexion
+      this.$router.push('/connection');
+    },
+    
+    handleDroneConnected(droneInfo) {
+      this.isConnected = true;
+      // Mise à jour initiale des données du drone
+      if (droneInfo) {
+        this.droneData.battery = droneInfo.battery || this.droneData.battery;
+        this.droneData.temperature = droneInfo.temp || this.droneData.temperature;
+        this.droneData.height = droneInfo.height || this.droneData.height;
+      }
+      this.startPollingData();
+      this.refreshVideo();
+    },
+    
+    handleDroneDisconnected() {
+      this.isConnected = false;
+      if (this.dataUpdateInterval) {
+        clearInterval(this.dataUpdateInterval);
+      }
+    },
+    
+    refreshVideo() {
+      // Force le rafraîchissement du flux vidéo
+      this.videoUrl = `${API_URL}/video_feed?timestamp=${new Date().getTime()}`;
+    },
+    
+    startPollingData() {
+      // Arrêter l'intervalle existant si présent
+      if (this.dataUpdateInterval) {
+        clearInterval(this.dataUpdateInterval);
+      }
+      
+      // Récupérer régulièrement les données du drone
+      this.dataUpdateInterval = setInterval(async () => {
+        try {
+          const response = await axios.get(`${API_URL}/drone_data`);
+          this.droneData = response.data;
+          this.consecutiveErrors = 0; // Réinitialiser le compteur d'erreurs
+        } catch (error) {
+          console.error("Erreur lors de la récupération des données:", error);
+          // Si erreur persistante, considérer le drone comme déconnecté
+          if (this.isConnected) {
+            this.consecutiveErrors += 1;
+            if (this.consecutiveErrors > 3) {
+              this.isConnected = false;
+              clearInterval(this.dataUpdateInterval);
+              localStorage.removeItem('droneConnected');
+            }
+          }
+        }
+      }, 1000);
+    },
+    
+    async sendCommand(command) {
+      try {
+        const response = await axios.get(`${API_URL}/${command}`);
+        if (!response.data.success) {
+          alert(response.data.message);
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'envoi de la commande:", error);
+        alert("Échec de l'envoi de la commande au drone");
+      }
+    },
+    
+    // Les autres méthodes restent les mêmes (handleVideoError, takePhoto, toggleFullscreen, etc.)
+    handleVideoError() {
+      console.warn("Erreur dans le chargement du flux vidéo, tentative de reconnexion...");
+      this.refreshVideo();
+    },
+    
+    takePhoto() {
+      if (!this.isConnected) return;
+      
+      // Capture l'image actuelle depuis le flux vidéo
+      const video = this.$refs.videoContainer.querySelector('img');
+      if (video) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.naturalWidth || 640;
+        canvas.height = video.naturalHeight || 480;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convertir en base64
+        const imgData = canvas.toDataURL('image/jpeg');
+        
+        // Ajouter à notre collection d'images
+        this.capturedImages.unshift({
+          src: imgData,
+          name: `capture_${new Date().toISOString().replace(/:/g, '-')}.jpg`
+        });
+        
+        // Notification visuelle
+        this.$notify && this.$notify({
+          title: 'Photo capturée',
+          message: 'Image ajoutée à la galerie',
+          type: 'success'
+        });
+        
+        // Télécharger l'image
+        const link = document.createElement('a');
+        link.href = imgData;
+        link.download = `drone_capture_${new Date().toISOString().replace(/:/g, '-')}.jpg`;
+        link.click();
+      }
+    },
+    
+    toggleFullscreen() {
+      const videoContainer = this.$refs.videoContainer;
+      if (videoContainer) {
+        if (!document.fullscreenElement) {
+          if (videoContainer.requestFullscreen) {
+            videoContainer.requestFullscreen();
+          } else if (videoContainer.mozRequestFullScreen) { /* Firefox */
+            videoContainer.mozRequestFullScreen();
+          } else if (videoContainer.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+            videoContainer.webkitRequestFullscreen();
+          } else if (videoContainer.msRequestFullscreen) { /* IE/Edge */
+            videoContainer.msRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+        }
+      }
+    },
+    
+    formatTime(seconds) {
+      if (!seconds) return '00:00';
+      const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const secs = (seconds % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    },
+    
+    calculateDistance() {
+      // Cette fonction peut être implémentée plus tard si le drone fournit des données GPS
+      // Pour l'instant, retournons une valeur simulée basée sur la vitesse et le temps de vol
+      const distance = this.droneData.speed * this.droneData.flight_time * 0.3;
+      return Math.round(distance);
     }
   }
 };
 </script>
-
   
   <style scoped>
   .dashboard-container {
@@ -540,6 +745,103 @@ export default {
   .photo-item:hover img {
     transform: scale(1.05);
   }
+
+  .controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.control-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--light-gray);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 1rem 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.control-btn i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+.control-btn:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.control-btn:hover:not(:disabled) i {
+  color: white;
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-btn.emergency {
+  grid-column: span 2;
+  background-color: #ffeeee;
+}
+
+.control-btn.emergency i {
+  color: #e74c3c;
+}
+
+.control-btn.emergency:hover:not(:disabled) {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.control-btn.emergency:hover:not(:disabled) i {
+  color: white;
+}
+
+.btn-connect {
+  margin-left: 1rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Style pour fixer la taille du flux vidéo */
+.camera-content img {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Pour les photos capturées */
+.photo-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 50%);
+  pointer-events: none;
+}
+
   
   /* Responsive */
   @media screen and (max-width: 1200px) {

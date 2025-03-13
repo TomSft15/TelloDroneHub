@@ -30,6 +30,9 @@
           <router-link to="/keyboard-config" @click="closeMobileMenu">
             <i class="fas fa-keyboard"></i> Configuration
           </router-link>
+          <router-link to="/connect" @click="closeMobileMenu">
+            <i class="fas fa-wifi"></i> Connecter un drone
+          </router-link>
         </nav>
       </div>
     </header>
@@ -68,7 +71,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
   }
   
@@ -93,7 +96,7 @@
   
   .navbar-links {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.5rem;
   }
   
   .navbar-links a {

@@ -2,7 +2,7 @@
   <div id="app">
     <Navbar />
     <main class="main-content">
-      <router-view />
+      <router-view/>
     </main>
     <footer class="app-footer">
       <p>© 2025 Drone Control System | Conçu avec ❤️ pour les pilotes</p>
@@ -16,7 +16,7 @@ import Navbar from './components/Navbar.vue';
 export default {
   components: {
     Navbar,
-  },
+  }
 };
 </script>
 
@@ -36,7 +36,7 @@ export default {
   --light-gray: #ecf0f1;
   --medium-gray: #bdc3c7;
   --dark-gray: #7f8c8d;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   
   /* Espacement */
   --spacing-xs: 0.25rem;
