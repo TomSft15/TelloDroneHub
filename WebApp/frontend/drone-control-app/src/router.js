@@ -6,6 +6,7 @@ import VisionControlView from './components/views/VisionControlView.vue';
 import DashboardView from './components/views/DashboardView.vue';
 import KeyboardConfigView from './components/views/KeyboardConfigView.vue';
 import DroneConnection from './components/views/DroneConnection.vue';
+import DroneCamera from './components/DroneCamera.vue';
 
 const routes = [
   { path: '/', component: HomeView },
@@ -15,6 +16,7 @@ const routes = [
   { path: '/dashboard', component: DashboardView },
   { path: '/keyboard-config', component: KeyboardConfigView },
   { path: '/connect', component: DroneConnection },
+  { path: '/drone-camera', component: DroneCamera },
 ];
 
 const router = createRouter({
