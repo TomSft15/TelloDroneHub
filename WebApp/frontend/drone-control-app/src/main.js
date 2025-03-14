@@ -1,8 +1,12 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import notificationPlugin from './plugins/notification';
 
 const app = createApp(App);
+
+// Installation du plugin de notification
+app.use(notificationPlugin);
 
 // Créer un bus d'événements simple pour Vue 3
 app.config.globalProperties.$bus = createEventBus();
