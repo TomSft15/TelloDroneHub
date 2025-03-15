@@ -30,8 +30,8 @@
           
           <div class="instruction-item">
             <div class="key-group">
-              <span class="key">W</span>
-              <span class="key">A</span>
+              <span class="key">Z</span>
+              <span class="key">Q</span>
               <span class="key">S</span>
               <span class="key">D</span>
             </div>
@@ -39,17 +39,17 @@
           </div>
           
           <div class="instruction-item">
-            <span class="key">T</span>
+            <span class="key">A</span>
             <span class="instruction-label">Décollage</span>
           </div>
           
           <div class="instruction-item">
-            <span class="key">L</span>
+            <span class="key">E</span>
             <span class="instruction-label">Atterrissage</span>
           </div>
           
           <div class="instruction-item">
-            <span class="key key-long">ESC</span>
+            <span class="key key-long">P</span>
             <span class="instruction-label">Arrêt d'urgence</span>
           </div>
         </div>
@@ -296,6 +296,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import keyboardControls from '../mixins/keyboardControls';
 
 export default {
@@ -354,17 +355,18 @@ export default {
     }
   },
   mounted() {
+    this.enableKeyboardControls();
     // Vérifier si le navigateur supporte la reconnaissance vocale
     this.checkSpeechRecognitionSupport();
   },
   methods: {
     sendCommand(command) {
       console.log(`Commande envoyée: ${command}`);
-      // Vous pouvez ajouter ici la logique pour envoyer la commande à l'API
-      // Exemple: axios.get(`${API_URL}/${command}`);
-      
-      // Pour l'instant, on affiche simplement une alerte
-      alert(`Commande envoyée: ${command}`);
+      if (this.executeCommand) {
+        this.executeCommand(command);
+      } else {
+        console.warn(`La méthode executeCommand n'est pas disponible. Commande: ${command}`);
+      }
     },
     
     toggleKeyboardControls() {
@@ -385,6 +387,11 @@ export default {
     },
     
     toggleSpeechRecognition() {
+      if (this.keyboardEnabled) {
+        this.disableKeyboardControls();
+      } else {
+        this.enableKeyboardControls();
+      }
       if (!this.recognitionEnabled) {
         alert('La reconnaissance vocale n\'est pas disponible sur ce navigateur.');
         return;
@@ -395,6 +402,9 @@ export default {
       } else {
         this.startSpeechRecognition();
       }
+      this.$notify && this.$notify.info(
+        this.keyboardEnabled ? 'Contrôles clavier activés' : 'Contrôles clavier désactivés'
+      );
     },
     
     startSpeechRecognition() {
