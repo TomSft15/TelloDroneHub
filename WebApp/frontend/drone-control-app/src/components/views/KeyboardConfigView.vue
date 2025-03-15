@@ -215,16 +215,7 @@
           'f': 'flipLeft',                // Left flip
           'h': 'flipRight',               // Right flip
           'i': 'speechRecognition',       // Speech recognition
-          'm': 'quit',                    // Quitter le programme
-          'Space': 'hover',               // Conserver cette fonctionnalité
-          'c': 'capturePhoto',            // Conserver cette fonctionnalité
-          'v': 'startRecording',          // Conserver cette fonctionnalité
-          'b': 'stopRecording',           // Conserver cette fonctionnalité
-          '1': 'increaseAltitude',        // Conserver cette fonctionnalité
-          '2': 'decreaseAltitude',        // Conserver cette fonctionnalité
-          '3': 'increaseSpeed',           // Conserver cette fonctionnalité
-          '4': 'decreaseSpeed',           // Conserver cette fonctionnalité
-          'r': 'returnToHome'             // Conserver cette fonctionnalité
+          'm': 'quit'                     // Quitter le programme
         },
         defaultBindings: {},
         isRebinding: false,
@@ -243,16 +234,6 @@
           'takeoff': 'Décoller',
           'land': 'Atterrir',
           'emergencyStop': 'Arrêt d\'urgence',
-          'hover': 'Maintenir en vol stationnaire',
-          'capturePhoto': 'Prendre une photo',
-          'startRecording': 'Démarrer l\'enregistrement',
-          'stopRecording': 'Arrêter l\'enregistrement',
-          'increaseAltitude': 'Augmenter l\'altitude',
-          'decreaseAltitude': 'Diminuer l\'altitude',
-          'increaseSpeed': 'Augmenter la vitesse',
-          'decreaseSpeed': 'Diminuer la vitesse',
-          'returnToHome': 'Retourner à la base',
-          // Nouvelles entrées
           'flipForward': 'Looping avant',
           'flipBackward': 'Looping arrière',
           'flipLeft': 'Looping à gauche',
@@ -279,21 +260,11 @@
           'rotateRight': 'movement',
           'takeoff': 'movement',
           'land': 'movement',
-          'hover': 'movement',
-          'increaseAltitude': 'movement',
-          'decreaseAltitude': 'movement',
-          'increaseSpeed': 'movement',
-          'decreaseSpeed': 'movement',
-          'returnToHome': 'movement',
-          'capturePhoto': 'camera',
-          'startRecording': 'camera',
-          'stopRecording': 'camera',
-          'emergencyStop': 'emergency',
-          // Nouvelles entrées
           'flipForward': 'movement',
           'flipBackward': 'movement',
           'flipLeft': 'movement',
           'flipRight': 'movement',
+          'emergencyStop': 'emergency',
           'speechRecognition': 'control',
           'quit': 'system'
         },
@@ -309,16 +280,6 @@
           'takeoff': 'fas fa-rocket',
           'land': 'fas fa-plane-arrival',
           'emergencyStop': 'fas fa-stop-circle',
-          'hover': 'fas fa-dot-circle',
-          'capturePhoto': 'fas fa-camera',
-          'startRecording': 'fas fa-video',
-          'stopRecording': 'fas fa-video-slash',
-          'increaseAltitude': 'fas fa-level-up-alt',
-          'decreaseAltitude': 'fas fa-level-down-alt',
-          'increaseSpeed': 'fas fa-tachometer-alt',
-          'decreaseSpeed': 'fas fa-tachometer-alt',
-          'returnToHome': 'fas fa-home',
-          // Nouvelles entrées
           'flipForward': 'fas fa-sync-alt',
           'flipBackward': 'fas fa-sync-alt',
           'flipLeft': 'fas fa-sync-alt',
@@ -326,6 +287,7 @@
           'speechRecognition': 'fas fa-microphone',
           'quit': 'fas fa-power-off'
         }
+
       };
     },
     computed: {

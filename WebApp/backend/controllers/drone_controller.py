@@ -59,6 +59,8 @@ class Land(Resource):
         success, message = drone_service.land()
         return {"success": success, "message": message}
 
+# Routes à ajouter au fichier existant WebApp/backend/controllers/drone_controller.py
+
 @drone_ns.route('/move/up')
 class MoveUp(Resource):
     @drone_ns.doc(description='Faire monter le drone')
@@ -247,9 +249,13 @@ class SpeechRecognition(Resource):
     @drone_ns.response(200, 'Succès', response_model)
     def get(self):
         """Activer la reconnaissance vocale"""
-        # Cette fonctionnalité pourrait utiliser le module speechRecognitionModule.py
         try:
-            # Ici, nous pourrions appeler la fonction speechToText et traiter la commande retournée
+            # Cette implémentation nécessiterait d'importer speechRecognitionModule
+            # from speechRecognitionModule import speechToText
+            # command = speechToText()
+            # if command:
+            #     # Traiter la commande
+            #     pass
             return {"success": True, "message": "Reconnaissance vocale activée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de l'activation de la reconnaissance vocale: {str(e)}"}
@@ -259,15 +265,13 @@ class Quit(Resource):
     @drone_ns.doc(description='Quitter le programme')
     @drone_ns.response(200, 'Succès', response_model)
     def get(self):
-        """Quitter le programme"""
+        """Quitter le programme (atterrissage puis déconnexion)"""
         if drone_service.connected and drone_service.drone:
             try:
                 drone_service.drone.land()
                 drone_service.disconnect()
             except Exception as e:
                 print(f"Erreur lors de la déconnexion: {str(e)}")
-        # Dans un environnement web, nous ne pouvons pas réellement quitter le programme
-        # Nous renvoyons donc un message de succès pour indiquer que la déconnexion a été effectuée
         return {"success": True, "message": "Drone déconnecté et prêt à quitter"}
 
 # Routes supplémentaires pour le hover et autres fonctionnalités

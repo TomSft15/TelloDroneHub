@@ -15,6 +15,7 @@ export default {
     return axios.get(`${API_URL}/status/drone_data`);
   },
   
+  // Commandes de base
   takeoff() {
     return axios.get(`${API_URL}/drone/takeoff`);
   },
@@ -23,6 +24,7 @@ export default {
     return axios.get(`${API_URL}/drone/land`);
   },
   
+  // Commandes de mouvement
   moveUp() {
     return axios.get(`${API_URL}/drone/move/up`);
   },
@@ -55,6 +57,7 @@ export default {
     return axios.get(`${API_URL}/drone/rotate/right`);
   },
   
+  // Commandes de flip
   flipForward() {
     return axios.get(`${API_URL}/drone/flip/forward`);
   },
@@ -71,6 +74,7 @@ export default {
     return axios.get(`${API_URL}/drone/flip/right`);
   },
   
+  // Commandes spéciales
   emergencyStop() {
     return axios.get(`${API_URL}/drone/emergency`);
   },
@@ -83,45 +87,7 @@ export default {
     return axios.get(`${API_URL}/drone/quit`);
   },
   
-  // Méthode pour le hover
-  hover() {
-    return axios.get(`${API_URL}/drone/hover`);
-  },
-  
-  // Méthode pour la caméra
-  capturePhoto() {
-    return axios.get(`${API_URL}/drone/capture_photo`);
-  },
-  
-  startRecording() {
-    return axios.get(`${API_URL}/drone/start_recording`);
-  },
-  
-  stopRecording() {
-    return axios.get(`${API_URL}/drone/stop_recording`);
-  },
-  
-  // Autres fonctionnalités
-  increaseAltitude() {
-    return axios.get(`${API_URL}/drone/increase_altitude`);
-  },
-  
-  decreaseAltitude() {
-    return axios.get(`${API_URL}/drone/decrease_altitude`);
-  },
-  
-  increaseSpeed() {
-    return axios.get(`${API_URL}/drone/increase_speed`);
-  },
-  
-  decreaseSpeed() {
-    return axios.get(`${API_URL}/drone/decrease_speed`);
-  },
-  
-  returnToHome() {
-    return axios.get(`${API_URL}/drone/return_home`);
-  },
-  
+  // Flux vidéo
   getVideoUrl() {
     return `${API_URL}/video/feed?timestamp=${new Date().getTime()}`;
   }

@@ -114,7 +114,6 @@ export default {
           break;
         default:
           console.warn(`Commande non reconnue: ${command}`);
-          this.sendCommand(command); // Fallback à la méthode sendCommand si elle existe
       }
     }
   },
