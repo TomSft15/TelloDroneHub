@@ -199,26 +199,32 @@
     data() {
       return {
         keyBindings: {
-          'ArrowUp': 'moveUp',
-          'ArrowDown': 'moveDown',
-          'ArrowLeft': 'moveLeft',
-          'ArrowRight': 'moveRight',
-          'w': 'moveForward',
-          's': 'moveBackward',
-          'a': 'rotateLeft',
-          'd': 'rotateRight',
-          't': 'takeoff',
-          'l': 'land',
-          'Escape': 'emergencyStop',
-          'Space': 'hover',
-          'c': 'capturePhoto',
-          'v': 'startRecording',
-          'b': 'stopRecording',
-          '1': 'increaseAltitude',
-          '2': 'decreaseAltitude',
-          '3': 'increaseSpeed',
-          '4': 'decreaseSpeed',
-          'r': 'returnToHome'
+          'ArrowUp': 'moveUp',            // Monter
+          'ArrowDown': 'moveDown',        // Descendre
+          'ArrowLeft': 'rotateLeft',      // Rotation gauche
+          'ArrowRight': 'rotateRight',    // Rotation droite
+          'z': 'moveForward',             // Avancer
+          's': 'moveBackward',            // Reculer
+          'q': 'moveLeft',                // Aller à gauche
+          'd': 'moveRight',               // Aller à droite
+          'a': 'takeoff',                 // Décollage
+          'e': 'land',                    // Atterrissage
+          'p': 'emergencyStop',           // Arrêt d'urgence
+          't': 'flipForward',             // Front flip
+          'g': 'flipBackward',            // Back flip
+          'f': 'flipLeft',                // Left flip
+          'h': 'flipRight',               // Right flip
+          'i': 'speechRecognition',       // Speech recognition
+          'm': 'quit',                    // Quitter le programme
+          'Space': 'hover',               // Conserver cette fonctionnalité
+          'c': 'capturePhoto',            // Conserver cette fonctionnalité
+          'v': 'startRecording',          // Conserver cette fonctionnalité
+          'b': 'stopRecording',           // Conserver cette fonctionnalité
+          '1': 'increaseAltitude',        // Conserver cette fonctionnalité
+          '2': 'decreaseAltitude',        // Conserver cette fonctionnalité
+          '3': 'increaseSpeed',           // Conserver cette fonctionnalité
+          '4': 'decreaseSpeed',           // Conserver cette fonctionnalité
+          'r': 'returnToHome'             // Conserver cette fonctionnalité
         },
         defaultBindings: {},
         isRebinding: false,
@@ -245,7 +251,14 @@
           'decreaseAltitude': 'Diminuer l\'altitude',
           'increaseSpeed': 'Augmenter la vitesse',
           'decreaseSpeed': 'Diminuer la vitesse',
-          'returnToHome': 'Retourner à la base'
+          'returnToHome': 'Retourner à la base',
+          // Nouvelles entrées
+          'flipForward': 'Looping avant',
+          'flipBackward': 'Looping arrière',
+          'flipLeft': 'Looping à gauche',
+          'flipRight': 'Looping à droite',
+          'speechRecognition': 'Reconnaissance vocale',
+          'quit': 'Quitter le programme'
         },
         keyNames: {
           'ArrowUp': '↑',
@@ -275,7 +288,14 @@
           'capturePhoto': 'camera',
           'startRecording': 'camera',
           'stopRecording': 'camera',
-          'emergencyStop': 'emergency'
+          'emergencyStop': 'emergency',
+          // Nouvelles entrées
+          'flipForward': 'movement',
+          'flipBackward': 'movement',
+          'flipLeft': 'movement',
+          'flipRight': 'movement',
+          'speechRecognition': 'control',
+          'quit': 'system'
         },
         actionIcons: {
           'moveUp': 'fas fa-arrow-up',
@@ -297,7 +317,14 @@
           'decreaseAltitude': 'fas fa-level-down-alt',
           'increaseSpeed': 'fas fa-tachometer-alt',
           'decreaseSpeed': 'fas fa-tachometer-alt',
-          'returnToHome': 'fas fa-home'
+          'returnToHome': 'fas fa-home',
+          // Nouvelles entrées
+          'flipForward': 'fas fa-sync-alt',
+          'flipBackward': 'fas fa-sync-alt',
+          'flipLeft': 'fas fa-sync-alt',
+          'flipRight': 'fas fa-sync-alt',
+          'speechRecognition': 'fas fa-microphone',
+          'quit': 'fas fa-power-off'
         }
       };
     },
