@@ -23,13 +23,17 @@ export default {
         'i': 'speechRecognition',       // Speech recognition
         'm': 'quit'                     // Quitter le programme
       },
-      keyboardStatus: 'Contrôles clavier désactivés'
+      keyboardStatus: 'Contrôles clavier désactivés',
+      keyLastPressed: {}, // Stocke le dernier moment où une touche a été pressée
+      keyCommandCooldown: 500, // Délai en millisecondes entre les commandes (500ms par défaut)
+      pressedKeys: {} // Garde trace des touches actuellement enfoncées
     };
   },
   methods: {
     enableKeyboardControls() {
       if (!this.keyboardEnabled) {
         window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
         this.keyboardEnabled = true;
         this.keyboardStatus = 'Contrôles clavier activés';
         console.log('Contrôles clavier activés');
@@ -38,6 +42,7 @@ export default {
     disableKeyboardControls() {
       if (this.keyboardEnabled) {
         window.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener('keyup', this.handleKeyUp);
         this.keyboardEnabled = false;
         this.keyboardStatus = 'Contrôles clavier désactivés';
         console.log('Contrôles clavier désactivés');
@@ -49,11 +54,39 @@ export default {
         return;
       }
       
-      const command = this.keyCommands[event.key];
+      const key = event.key;
+      const command = this.keyCommands[key];
+      
       if (command) {
-        this.executeCommand(command);
+        // Enregistrer la touche comme étant enfoncée
+        this.pressedKeys[key] = true;
+        
+        // Vérifier le délai depuis la dernière pression
+        const currentTime = Date.now();
+        if (!this.keyLastPressed[key] || (currentTime - this.keyLastPressed[key]) > this.keyCommandCooldown) {
+          this.executeCommand(command);
+          // Mettre à jour le timestamp de la dernière pression pour cette touche
+          this.keyLastPressed[key] = currentTime;
+        }
+        
         // Éviter les actions par défaut du navigateur (comme le défilement)
         event.preventDefault();
+      }
+    },
+    handleKeyUp(event) {
+      const key = event.key;
+      
+      // Marquer la touche comme n'étant plus enfoncée
+      if (this.pressedKeys[key]) {
+        delete this.pressedKeys[key];
+      }
+      
+      // Pour certaines commandes, il peut être utile d'envoyer une commande d'arrêt
+      // quand la touche est relâchée (par exemple pour les mouvements)
+      const command = this.keyCommands[key];
+      if (command && command.startsWith('move')) {
+        // Envoyer une commande pour arrêter le mouvement
+        this.stopMovement();
       }
     },
     executeCommand(command) {
@@ -114,6 +147,27 @@ export default {
           break;
         default:
           console.warn(`Commande non reconnue: ${command}`);
+      }
+    },
+    stopMovement() {
+      // Cette fonction sera appelée lorsqu'une touche de mouvement est relâchée
+      // Pour arrêter le mouvement, on peut utiliser un appel API spécifique
+      // ou simplement appeler une méthode du service drone
+      
+      // Envoyer une commande "hover" ou équivalente
+      console.log("Arrêt du mouvement");
+      
+      // Si vous avez une API qui gère cela, utilisez-la
+      // Par exemple:
+      // DroneService.hover();
+    },
+    // La méthode suivante permet de régler le délai entre les commandes
+    setCommandCooldown(milliseconds) {
+      if (milliseconds >= 100 && milliseconds <= 2000) {
+        this.keyCommandCooldown = milliseconds;
+        console.log(`Délai entre les commandes défini à ${milliseconds}ms`);
+      } else {
+        console.warn("Le délai doit être compris entre 100ms et 2000ms");
       }
     }
   },
