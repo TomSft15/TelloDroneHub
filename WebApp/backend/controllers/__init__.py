@@ -2,3 +2,4 @@
 from controllers.drone_controller import drone_ns
 from controllers.status_controller import status_ns
 from controllers.video_controller import video_ns
+from controllers.gesture_controller import gesture_ns

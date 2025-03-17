@@ -5,6 +5,7 @@ from flask_restx import Api, Resource
 from controllers.drone_controller import drone_ns
 from controllers.video_controller import video_ns
 from controllers.status_controller import status_ns
+from controllers.gesture_controller import gesture_ns  # Nouveau contrôleur
 
 def create_app():
     app = Flask(__name__)
@@ -19,6 +20,7 @@ def create_app():
     api.add_namespace(drone_ns)
     api.add_namespace(video_ns)
     api.add_namespace(status_ns)
+    api.add_namespace(gesture_ns)  # Ajout du namespace de gestes
 
     # Test endpoint
     @api.route('/test')

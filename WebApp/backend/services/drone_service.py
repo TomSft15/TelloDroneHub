@@ -94,12 +94,19 @@ class DroneService:
         return self.drone_data.to_dict()
     
     def takeoff(self):
-        """Commande de décollage"""
+        """Faire décoller le drone"""
         if not self.connected or not self.drone:
             return False, "Drone non connecté"
         try:
             self.drone.takeoff()
-            return True, "Décollage réussi"
+            # Pause courte pour laisser le drone se stabiliser initialement
+            import time
+            time.sleep(0.5)  # Attendre 500ms
+            
+            # Envoyer une commande de vol stationnaire pour garantir la stabilité
+            self.drone.send_rc_control(0, 0, 0, 0)
+            
+            return True, "Décollage réussi et stabilisation activée"
         except Exception as e:
             return False, f"Erreur lors du décollage: {str(e)}"
     
