@@ -392,7 +392,7 @@ export default {
   },
   data() {
     return {
-      isConnected: true,
+      isConnected: false,
       videoUrl: `${API_URL}/video/feed`,
       videoRefreshKey: 0,
       droneData: {
@@ -403,7 +403,7 @@ export default {
         speed: 0,
         signal: 0
       },
-      keyboardEnabled: true,      // Activé par défaut
+      keyboardEnabled: false,      // Activé par défaut
       voiceEnabled: false,
       gestureEnabled: false,
       visionEnabled: false,
@@ -466,7 +466,7 @@ export default {
       
       // Gesture control
       isGestureEnabled: false,
-      isDroneConnected: true,
+      isDroneConnected: false,
       isGestureLoading: false,
       gestureStatus: null,
       statusInterval: null,
@@ -583,10 +583,8 @@ export default {
     async checkDroneStatus() {
       try {
         const response = await axios.get(`${API_URL}/status`);
-        // this.isConnected = response.data.connected;
-        this.isConnected = true;
-        // this.isDroneConnected = response.data.connected;
-        this.isDroneConnected = true;
+        this.isConnected = response.data.connected;
+        this.isDroneConnected = response.data.connected;
         
         if (this.isConnected) {
           this.droneData = response.data.drone_data;
@@ -597,10 +595,8 @@ export default {
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de l'état du drone:", error);
-        // this.isConnected = false;
-        this.isConnected = true;
-        // this.isDroneConnected = false;
-        this.isDroneConnected = true;
+        this.isConnected = false;
+        this.isDroneConnected = false;
         localStorage.removeItem('droneConnected');
       }
     },
@@ -731,94 +727,18 @@ export default {
     },
     
     takePhoto() {
-      if (!this.isConnected) {
-        console.error('Le drone n\'est pas connecté');
-        alert('Le drone n\'est pas connecté');
-        return;
-      }
+      // Au lieu d'essayer de capturer l'image, on stocke simplement l'URL
+      const timestamp = new Date().toISOString().replace(/:/g, '-');
+      const imageName = `capture_${timestamp}.jpg`;
       
-      try {
-        // Vérifier si le conteneur vidéo existe
-        if (!this.$refs.videoContainer) {
-          console.error("Référence 'videoContainer' non trouvée");
-          return;
-        }
-        
-        // Obtenir l'élément img du flux vidéo
-        const video = this.$refs.videoContainer.querySelector('img');
-        if (!video) {
-          console.error("Élément vidéo non trouvé dans le conteneur");
-          return;
-        }
-        
-        // S'assurer que l'image est chargée
-        if (!video.complete || !video.naturalWidth) {
-          console.warn('Le flux vidéo n\'est pas encore prêt');
-          alert('Le flux vidéo n\'est pas encore prêt');
-          return;
-        }
-        
-        // Créer un canvas pour capturer l'image
-        const canvas = document.createElement('canvas');
-        const width = video.naturalWidth || 640;
-        const height = video.naturalHeight || 480;
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Dessiner l'image sur le canvas
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          console.error("Impossible de créer le contexte 2D du canvas");
-          return;
-        }
-        
-        console.log(`Capture de l'image: ${width}x${height}`);
-        ctx.drawImage(video, 0, 0, width, height);
-        
-        // Convertir en base64
-        try {
-          const imgData = canvas.toDataURL('image/jpeg', 0.9);
-          
-          // Vérifier que les données d'image sont valides
-          if (!imgData || imgData === 'data:,') {
-            console.error("Données d'image invalides générées");
-            return;
-          }
-          
-          // Générer un nom unique pour l'image
-          const timestamp = new Date().toISOString().replace(/:/g, '-');
-          const imageName = `capture_${timestamp}.jpg`;
-          
-          // Ajouter à notre collection d'images
-          this.capturedImages.unshift({
-            src: imgData,
-            name: imageName
-          });
-          
-          // Sauvegarder les images dans le localStorage pour les conserver entre les sessions
-          localStorage.setItem('droneImages', JSON.stringify(this.capturedImages.slice(0, 20)));
-          
-          // Afficher une alerte simple de succès
-          console.log('Photo capturée avec succès');
-          
-          // Télécharger l'image
-          const link = document.createElement('a');
-          link.href = imgData;
-          link.download = `drone_${imageName}`;
-          document.body.appendChild(link); // Nécessaire pour Firefox
-          link.click();
-          document.body.removeChild(link); // Nettoyer
-          
-          return true;
-        } catch (e) {
-          console.error("Erreur lors de la conversion de l'image:", e);
-          return false;
-        }
-      } catch (error) {
-        console.error("Erreur lors de la capture de la photo:", error);
-        alert('Impossible de capturer la photo');
-        return false;
-      }
+      this.capturedImages.unshift({
+        src: `${this.videoUrl}&timestamp=${Date.now()}`,
+        name: imageName
+      });
+      
+      localStorage.setItem('droneImages', JSON.stringify(this.capturedImages.slice(0, 20)));
+      
+      alert('Photo capturée !');
     },
 
     loadSavedImages() {
