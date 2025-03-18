@@ -70,7 +70,7 @@ class MoveUp(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(0, 0, 50, 0)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(0, 0, 70, 0)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de montée envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de la montée: {str(e)}"}
@@ -84,7 +84,7 @@ class MoveDown(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(0, 0, -50, 0)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(0, 0, -70, 0)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de descente envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de la descente: {str(e)}"}
@@ -98,7 +98,7 @@ class MoveLeft(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(-50, 0, 0, 0)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(-70, 0, 0, 0)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de déplacement vers la gauche envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors du déplacement vers la gauche: {str(e)}"}
@@ -112,7 +112,7 @@ class MoveRight(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(50, 0, 0, 0)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(70, 0, 0, 0)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de déplacement vers la droite envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors du déplacement vers la droite: {str(e)}"}
@@ -126,7 +126,7 @@ class MoveForward(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(0, 50, 0, 0)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(0, 70, 0, 0)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande d'avancer envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de l'avancée: {str(e)}"}
@@ -140,7 +140,7 @@ class MoveBackward(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(0, -50, 0, 0)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(0, -70, 0, 0)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de reculer envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors du recul: {str(e)}"}
@@ -154,7 +154,7 @@ class RotateLeft(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(0, 0, 0, -50)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(0, 0, 0, -70)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de rotation à gauche envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de la rotation à gauche: {str(e)}"}
@@ -168,7 +168,7 @@ class RotateRight(Resource):
         if not drone_service.connected or not drone_service.drone:
             return {"success": False, "message": "Drone non connecté"}
         try:
-            drone_service.drone.send_rc_control(0, 0, 0, 50)  # lr, fb, ud, yaw
+            drone_service.drone.send_rc_control(0, 0, 0, 70)  # lr, fb, ud, yaw
             return {"success": True, "message": "Commande de rotation à droite envoyée"}
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de la rotation à droite: {str(e)}"}
