@@ -10,6 +10,10 @@
         </div>
         <div class="modal-content">
           <div class="photos-gallery">
+            <div v-if="capturedImages.length < 1" class="empty-photos">
+              <font-awesome-icon icon="image"/>
+              <p>Aucune photo disponible</p>
+            </div>
             <div v-for="(image, index) in capturedImages" :key="index" class="gallery-item">
               <img :src="image.src" :alt="image.name">
               <div class="gallery-item-info">
@@ -2594,6 +2598,27 @@ input:disabled + .slider:before {
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+.empty-photos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--medium-gray);
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-md);
+  text-align: center;
+}
+
+.empty-photos i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-photos p {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .gesture-image {
