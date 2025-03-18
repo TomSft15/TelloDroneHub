@@ -730,19 +730,24 @@ export default {
       }
     },
     
-    takePhoto() {
-      // Au lieu d'essayer de capturer l'image, on stocke simplement l'URL
-      const timestamp = new Date().toISOString().replace(/:/g, '-');
-      const imageName = `capture_${timestamp}.jpg`;
-      
-      this.capturedImages.unshift({
-        src: `${this.videoUrl}&timestamp=${Date.now()}`,
-        name: imageName
-      });
-      
-      localStorage.setItem('droneImages', JSON.stringify(this.capturedImages.slice(0, 20)));
-      
-      alert('Photo capturée !');
+    async takePhoto() {
+      try {
+        // Faire une requête au serveur pour capturer l'image
+        const response = await axios.get(`${API_URL}/capture_photo`);
+        
+        if (response.data && response.data.success) {
+          // Le serveur renvoie l'image en base64
+          this.capturedImages.unshift({
+            src: response.data.image,
+            name: `capture_${new Date().toISOString().replace(/:/g, '-')}.jpg`
+          });
+          
+          localStorage.setItem('droneImages', JSON.stringify(this.capturedImages));
+          alert('Photo capturée !');
+        }
+      } catch (error) {
+        alert('Erreur de capture: ' + error.message);
+      }
     },
 
     loadSavedImages() {
