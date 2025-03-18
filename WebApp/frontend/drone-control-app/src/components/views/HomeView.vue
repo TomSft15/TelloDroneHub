@@ -1,79 +1,142 @@
 <template>
-  <div class="home-container">
-    <section class="hero">
+  <div class="home-view">
+    <!-- Section Héro -->
+    <section class="hero-section">
       <div class="hero-content">
-        <h1>Contrôlez votre drone de façon intuitive</h1>
-        <p class="hero-description">
-          Pilotez votre drone à l'aide de la voix, des gestes, de la vision ou du clavier. Une interface simple et puissante pour une expérience de vol optimale.
+        <h1 class="hero-title">Contrôle intuitif de drone</h1>
+        <p class="hero-subtitle">
+          Une plateforme tout-en-un pour piloter votre drone via gestes, voix ou clavier
         </p>
-        <div class="hero-buttons">
-          <router-link to="/voice-control" class="btn-primary">
+        <div class="hero-actions">
+          <router-link to="/dashboard" class="btn btn-primary">
             <i class="fas fa-rocket"></i> Démarrer
           </router-link>
-          <a href="#features" class="btn-outline">En savoir plus</a>
+          <router-link to="/connect" class="btn btn-outline">
+            <i class="fas fa-plug"></i> Connecter un drone
+          </router-link>
         </div>
       </div>
-      <div class="hero-image">
+      <div class="hero-visual">
+        <!-- Image du drone ou animation -->
+        <div class="drone-animation">
+          <div class="drone-body"></div>
+          <div class="drone-propeller propeller-1"></div>
+          <div class="drone-propeller propeller-2"></div>
+          <div class="drone-propeller propeller-3"></div>
+          <div class="drone-propeller propeller-4"></div>
+        </div>
       </div>
     </section>
-
-    <section id="features" class="features">
-      <h2 class="section-title">Plusieurs modes de contrôle</h2>
-      <div class="feature-cards">
+    
+    <!-- Section Fonctionnalités -->
+    <section class="features-section">
+      <h2 class="section-title">Fonctionnalités intégrées</h2>
+      <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon voice-icon">
-            <i class="fas fa-microphone"></i>
+          <div class="feature-icon">
+            <i class="fas fa-tachometer-alt"></i>
           </div>
-          <h3>Contrôle vocal</h3>
-          <p>Donnez des ordres à votre drone en utilisant simplement votre voix. Idéal pour garder les mains libres.</p>
-          <router-link to="/voice-control" class="feature-link">Essayer <i class="fas fa-chevron-right"></i></router-link>
+          <h3>Tableau de bord unifié</h3>
+          <p>Toutes les commandes et données en temps réel regroupées dans une interface intuitive</p>
         </div>
-
+        
         <div class="feature-card">
-          <div class="feature-icon gesture-icon">
+          <div class="feature-icon">
             <i class="fas fa-hand-paper"></i>
           </div>
           <h3>Contrôle gestuel</h3>
-          <p>Pilotez votre drone avec des mouvements de main intuitifs capturés par votre caméra.</p>
-          <router-link to="/gesture-control" class="feature-link">Essayer <i class="fas fa-chevron-right"></i></router-link>
+          <p>Pilotez votre drone avec des mouvements de main naturels capturés par votre caméra</p>
         </div>
-
+        
         <div class="feature-card">
-          <div class="feature-icon vision-icon">
+          <div class="feature-icon">
+            <i class="fas fa-microphone"></i>
+          </div>
+          <h3>Commandes vocales</h3>
+          <p>Donnez des instructions à votre drone en utilisant simplement votre voix</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
             <i class="fas fa-eye"></i>
           </div>
-          <h3>Vision et suivi</h3>
-          <p>Laissez votre drone suivre automatiquement des personnes ou des objets grâce à la reconnaissance visuelle.</p>
-          <router-link to="/vision-control" class="feature-link">Essayer <i class="fas fa-chevron-right"></i></router-link>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon keyboard-icon">
-            <i class="fas fa-keyboard"></i>
-          </div>
-          <h3>Contrôle clavier</h3>
-          <p>Utilisez votre clavier pour un contrôle précis et personnalisable de votre drone.</p>
-          <router-link to="/keyboard-config" class="feature-link">Configurer <i class="fas fa-chevron-right"></i></router-link>
+          <h3>Suivi facial</h3>
+          <p>Votre drone détecte et suit automatiquement des visages pour des prises de vue parfaites</p>
         </div>
       </div>
     </section>
-
-    <section class="dashboard-preview">
-      <div class="dashboard-content">
-        <h2 class="section-title">Tableau de bord complet</h2>
-        <p>Consultez en temps réel toutes les informations de vol de votre drone :</p>
-        <ul class="dashboard-features">
-          <li><i class="fas fa-battery-three-quarters"></i> Niveau de batterie</li>
-          <li><i class="fas fa-signal"></i> Puissance du signal</li>
-          <li><i class="fas fa-map-marker-alt"></i> Position GPS</li>
-          <li><i class="fas fa-compass"></i> Orientation</li>
-          <li><i class="fas fa-video"></i> Flux vidéo en direct</li>
+    
+    <!-- Section Interface -->
+    <section class="interface-section">
+      <div class="interface-content">
+        <h2 class="section-title">Une interface intuitive</h2>
+        <p class="section-description">
+          Notre tableau de bord tout-en-un vous permet de basculer facilement entre différents modes de contrôle tout en visualisant les données de vol en temps réel.
+        </p>
+        <ul class="interface-features">
+          <li><i class="fas fa-check-circle"></i> Flux vidéo en direct</li>
+          <li><i class="fas fa-check-circle"></i> Statistiques détaillées du drone</li>
+          <li><i class="fas fa-check-circle"></i> Capture de photos et vidéos</li>
+          <li><i class="fas fa-check-circle"></i> Configuration personnalisable</li>
+          <li><i class="fas fa-check-circle"></i> Modes de contrôle interchangeables</li>
         </ul>
-        <router-link to="/dashboard" class="btn-primary">
-          <i class="fas fa-tachometer-alt"></i> Voir le tableau de bord
+        <router-link to="/dashboard" class="btn btn-primary">
+          <i class="fas fa-desktop"></i> Explorer l'interface
         </router-link>
       </div>
-      <div class="dashboard-image">
+      <div class="interface-preview">
+        <div class="dashboard-mockup">
+          <div class="mockup-header"></div>
+          <div class="mockup-sidebar"></div>
+          <div class="mockup-content">
+            <div class="mockup-video"></div>
+            <div class="mockup-controls"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Section Comment Démarrer -->
+    <section class="getting-started-section">
+      <h2 class="section-title">Comment démarrer</h2>
+      <div class="steps-container">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Connectez votre drone</h3>
+          <p>Établissez une connexion avec votre drone Tello via WiFi</p>
+          <router-link to="/connect" class="step-link">
+            Guide de connexion <i class="fas fa-arrow-right"></i>
+          </router-link>
+        </div>
+        
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Accédez au tableau de bord</h3>
+          <p>Visualisez le flux vidéo et les données de vol en temps réel</p>
+          <router-link to="/dashboard" class="step-link">
+            Tableau de bord <i class="fas fa-arrow-right"></i>
+          </router-link>
+        </div>
+        
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Choisissez votre mode de contrôle</h3>
+          <p>Basculez entre contrôle manuel, gestuel, vocal ou suivi automatique</p>
+          <router-link to="/dashboard" class="step-link">
+            Modes de contrôle <i class="fas fa-arrow-right"></i>
+          </router-link>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Section CTA -->
+    <section class="cta-section">
+      <div class="cta-content">
+        <h2>Prêt à prendre les commandes ?</h2>
+        <p>Lancez l'application et découvrez une nouvelle façon de piloter votre drone</p>
+        <router-link to="/dashboard" class="btn btn-cta">
+          Démarrer maintenant
+        </router-link>
       </div>
     </section>
   </div>
@@ -82,331 +145,519 @@
 <script>
 export default {
   name: 'HomeView'
-};
+}
 </script>
 
 <style scoped>
-.home-container {
-  max-width: 1200px;
-  margin: 0 auto;
+.home-view {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Hero Section */
-.hero {
+.hero-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 2rem 0 4rem;
-  gap: 3rem;
+  min-height: 85vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ebf4f5 0%, #c6e4f5 100%);
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-content {
   flex: 1;
+  max-width: 600px;
+  z-index: 2;
+  padding: 2rem;
 }
 
-.hero h1 {
-  font-size: 2.8rem;
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
   margin-bottom: 1.5rem;
+  color: #2c3e50;
   line-height: 1.2;
-  color: var(--text-color);
-  animation: fadeInUp 0.8s ease-out;
 }
 
-.hero-description {
-  font-size: 1.2rem;
-  color: var(--dark-gray);
-  margin-bottom: 2rem;
+.hero-subtitle {
+  font-size: 1.4rem;
   line-height: 1.6;
-  animation: fadeInUp 1s ease-out;
+  color: #34495e;
+  margin-bottom: 2.5rem;
 }
 
-.hero-buttons {
+.hero-actions {
   display: flex;
   gap: 1rem;
-  animation: fadeInUp 1.2s ease-out;
+  flex-wrap: wrap;
 }
 
-.btn-primary {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 0.8rem 1.5rem;
-  border-radius: var(--border-radius-md);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.btn-outline {
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-  padding: 0.8rem 1.5rem;
-  border-radius: var(--border-radius-md);
-  font-weight: 500;
-  transition: all 0.3s ease;
-  background-color: transparent;
-}
-
-.btn-outline:hover {
-  background-color: var(--primary-color);
-  color: white;
-  transform: translateY(-2px);
-}
-
-.hero-image {
+.hero-visual {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 50%;
-  animation: float 6s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
 }
 
-.hero-image img {
-  max-width: 100%;
-  border-radius: var(--border-radius-lg);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+/* Buttons */
+.btn {
+  padding: 0.8rem 1.8rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #3498db;
+  border: 2px solid #3498db;
+}
+
+.btn-outline:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  transform: translateY(-3px);
+}
+
+.btn-cta {
+  background-color: #e74c3c;
+  color: white;
+  font-size: 1.1rem;
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.btn-cta:hover {
+  background-color: #c0392b;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+}
+
+/* Drone Animation */
+.drone-animation {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+.drone-body {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 30px;
+  background-color: #34495e;
+  border-radius: 15px;
+}
+
+.drone-propeller {
+  position: absolute;
+  width: 50px;
+  height: 8px;
+  background-color: #3498db;
+  border-radius: 4px;
+  animation: spin 0.5s linear infinite;
+}
+
+.propeller-1 {
+  top: 30%;
+  left: 20%;
+}
+
+.propeller-2 {
+  top: 30%;
+  right: 20%;
+}
+
+.propeller-3 {
+  bottom: 30%;
+  left: 20%;
+}
+
+.propeller-4 {
+  bottom: 30%;
+  right: 20%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Features Section */
-.features {
-  padding: 4rem 0;
+.features-section {
+  padding: 5rem 2rem;
+  background-color: #fff;
 }
 
 .section-title {
   text-align: center;
+  font-size: 2.5rem;
   margin-bottom: 3rem;
-  font-size: 2.2rem;
-  color: var(--text-color);
+  color: #2c3e50;
   position: relative;
 }
 
 .section-title::after {
   content: '';
-  display: block;
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 80px;
   height: 4px;
-  background-color: var(--primary-color);
-  margin: 1rem auto 0;
+  background-color: #3498db;
   border-radius: 2px;
 }
 
-.feature-cards {
+.features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .feature-card {
-  background-color: white;
-  border-radius: var(--border-radius-md);
+  background-color: #fff;
+  border-radius: 15px;
   padding: 2rem;
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   text-align: center;
+  transition: all 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
 }
 
 .feature-icon {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
+  background-color: #ebf4f5;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
-  color: white;
-}
-
-.voice-icon {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-}
-
-.gesture-icon {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-}
-
-.vision-icon {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-}
-
-.keyboard-icon {
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  margin: 0 auto 1.5rem;
+  color: #3498db;
+  font-size: 2rem;
 }
 
 .feature-card h3 {
+  font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: var(--text-color);
+  color: #2c3e50;
 }
 
 .feature-card p {
-  color: var(--dark-gray);
-  margin-bottom: 1.5rem;
-  flex-grow: 1;
+  color: #7f8c8d;
+  line-height: 1.6;
 }
 
-.feature-link {
-  color: var(--primary-color);
-  display: inline-flex;
-  align-items: center;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.feature-link i {
-  margin-left: 0.25rem;
-  transition: transform 0.2s ease;
-}
-
-.feature-link:hover {
-  color: var(--primary-dark);
-}
-
-.feature-link:hover i {
-  transform: translateX(3px);
-}
-
-/* Dashboard Preview */
-.dashboard-preview {
-  padding: 5rem 0;
+/* Interface Section */
+.interface-section {
+  padding: 5rem 2rem;
+  background-color: #f9f9f9;
   display: flex;
   align-items: center;
-  gap: 3rem;
-  background-color: white;
-  margin: 2rem 0;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--card-shadow);
-  padding: 3rem;
+  flex-wrap: wrap;
 }
 
-.dashboard-content {
+.interface-content {
   flex: 1;
+  min-width: 300px;
+  padding: 2rem;
 }
 
-.dashboard-content .section-title {
+.interface-content .section-title {
   text-align: left;
-  margin-bottom: 1.5rem;
 }
 
-.dashboard-content .section-title::after {
-  margin: 1rem 0 0;
+.interface-content .section-title::after {
+  left: 0;
+  transform: none;
 }
 
-.dashboard-content p {
-  color: var(--dark-gray);
-  margin-bottom: 1.5rem;
+.section-description {
+  color: #7f8c8d;
+  line-height: 1.7;
   font-size: 1.1rem;
-}
-
-.dashboard-features {
-  list-style: none;
   margin-bottom: 2rem;
 }
 
-.dashboard-features li {
-  margin-bottom: 0.8rem;
-  display: flex;
-  align-items: center;
-  color: var(--text-color);
+.interface-features {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2.5rem;
 }
 
-.dashboard-features li i {
-  color: var(--primary-color);
-  margin-right: 0.8rem;
+.interface-features li {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  color: #34495e;
   font-size: 1.1rem;
 }
 
-.dashboard-image {
+.interface-features li i {
+  color: #2ecc71;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+}
+
+.interface-preview {
   flex: 1;
-  max-width: 50%;
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
 }
 
-.dashboard-image img {
+.dashboard-mockup {
   width: 100%;
-  height: auto;
-  display: block;
-  border-radius: var(--border-radius-md);
+  max-width: 600px;
+  height: 350px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.mockup-header {
+  height: 40px;
+  background-color: #34495e;
+  width: 100%;
+}
+
+.mockup-sidebar {
+  position: absolute;
+  width: 20%;
+  height: calc(100% - 40px);
+  top: 40px;
+  left: 0;
+  background-color: #ecf0f1;
+}
+
+.mockup-content {
+  position: absolute;
+  width: 80%;
+  height: calc(100% - 40px);
+  top: 40px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mockup-video {
+  height: 60%;
+  background-color: #95a5a6;
+}
+
+.mockup-controls {
+  height: 40%;
+  background-color: #ecf0f1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 10px;
+  padding: 10px;
+}
+
+.mockup-controls::before {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: #3498db;
+  border-radius: 5px;
+  bottom: 20px;
+  right: 30px;
+}
+
+/* Getting Started Section */
+.getting-started-section {
+  padding: 5rem 2rem;
+  background-color: #fff;
+}
+
+.steps-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.step-card {
+  flex: 1;
+  min-width: 250px;
+  max-width: 350px;
+  background-color: #fff;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.step-number {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  background-color: rgba(52, 152, 219, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #3498db;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.step-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.step-card p {
+  color: #7f8c8d;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.step-link {
+  color: #3498db;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.step-link:hover {
+  color: #2980b9;
+  gap: 0.75rem;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+  text-align: center;
+}
+
+.cta-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.cta-section p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 5rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .hero-content {
+    margin-bottom: 3rem;
+  }
+
+  .hero-title {
+    font-size: 2.8rem;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .interface-section {
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .interface-content .section-title {
+    text-align: center;
+  }
+
+  .interface-content .section-title::after {
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
-}
-
-/* Responsive Design */
-@media screen and (max-width: 992px) {
-  .hero {
-    flex-direction: column-reverse;
-    padding: 1rem 0 3rem;
-  }
-  
-  .hero h1 {
+@media (max-width: 768px) {
+  .hero-title {
     font-size: 2.2rem;
   }
-  
-  .hero-image {
-    max-width: 90%;
-    margin-bottom: 2rem;
+
+  .hero-subtitle {
+    font-size: 1.1rem;
   }
-  
-  .dashboard-preview {
-    flex-direction: column;
-    padding: 2rem;
+
+  .section-title {
+    font-size: 2rem;
   }
-  
-  .dashboard-image {
-    max-width: 100%;
-    order: -1;
-    margin-bottom: 2rem;
+
+  .step-card {
+    min-width: 100%;
   }
 }
 
-@media screen and (max-width: 768px) {
-  .hero-description {
-    font-size: 1rem;
+@media (max-width: 480px) {
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
   }
-  
-  .features {
-    padding: 3rem 0;
+
+  .btn {
+    width: 100%;
+    justify-content: center;
   }
-  
-  .feature-cards {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+
+  .feature-card {
+    padding: 1.5rem;
   }
 }
 </style>

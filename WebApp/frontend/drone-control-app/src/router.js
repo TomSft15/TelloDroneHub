@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from './components/views/HomeView.vue';
-import VoiceControlView from './components/views/VoiceControlView.vue';
-import GestureControlView from './components/views/GestureControlView.vue';
-import VisionControlView from './components/views/VisionControlView.vue';
 import DashboardView from './components/views/DashboardView.vue';
 import KeyboardConfigView from './components/views/KeyboardConfigView.vue';
 import DroneConnection from './components/views/DroneConnection.vue';
@@ -10,13 +7,15 @@ import DroneCamera from './components/DroneCamera.vue';
 
 const routes = [
   { path: '/', component: HomeView },
-  { path: '/voice-control', component: VoiceControlView },
-  { path: '/gesture-control', component: GestureControlView },
-  { path: '/vision-control', component: VisionControlView },
   { path: '/dashboard', component: DashboardView },
   { path: '/keyboard-config', component: KeyboardConfigView },
   { path: '/connect', component: DroneConnection },
   { path: '/drone-camera', component: DroneCamera },
+  
+  // Rediriger les anciennes routes vers le dashboard
+  { path: '/voice-control', redirect: '/dashboard' },
+  { path: '/gesture-control', redirect: '/dashboard' },
+  { path: '/vision-control', redirect: '/dashboard' },
 ];
 
 const router = createRouter({
@@ -27,7 +26,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.path === '/dashboard') {
     // Vérifier si le drone est connecté
-    const isDroneConnected = localStorage.getItem('droneConnected') === 'true';
+    const isDroneConnected = 'true';
     
     // Si pas connecté et que l'utilisateur va au tableau de bord,
     // rediriger vers la page de connexion

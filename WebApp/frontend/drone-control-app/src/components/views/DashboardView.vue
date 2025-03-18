@@ -12,6 +12,7 @@
     </div>
 
     <div class="dashboard-grid">
+      <!-- Section Caméra et Flux Vidéo -->
       <div class="camera-feed grid-item large">
         <div class="card-header">
           <h2>Flux vidéo en direct</h2>
@@ -20,60 +21,32 @@
             <button class="btn-icon" @click="takePhoto"><i class="fas fa-camera"></i></button>
           </div>
         </div>
-          <div class="camera-content" ref="videoContainer">
-            <img v-if="isConnected" :src="videoUrl" alt="Live feed" @error="handleVideoError">
-            <div v-else class="empty-camera">
-              <i class="fas fa-video-slash"></i>
-              <p>Flux vidéo non disponible</p>
-              <button v-if="!isConnected" @click="connectDrone" class="connect-btn">
-                <i class="fas fa-plug"></i> Connecter au drone
-              </button>
-              <button v-else @click="refreshVideo" class="refresh-btn">
-                <i class="fas fa-sync-alt"></i> Rafraîchir le flux
-              </button>
+        <div class="camera-content" ref="videoContainer">
+          <img v-if="isConnected" :src="videoUrl" alt="Live feed" @error="handleVideoError">
+          <div v-else class="empty-camera">
+            <i class="fas fa-video-slash"></i>
+            <p>Flux vidéo non disponible</p>
+            <button v-if="!isConnected" @click="connectDrone" class="connect-btn">
+              <i class="fas fa-plug"></i> Connecter au drone
+            </button>
+            <button v-else @click="refreshVideo" class="refresh-btn">
+              <i class="fas fa-sync-alt"></i> Rafraîchir le flux
+            </button>
+          </div>
+          <div class="camera-overlay">
+            <div class="overlay-item altitude">{{ droneData.height }}m</div>
+            <div class="overlay-item speed">{{ droneData.speed }}m/s</div>
+            <div v-if="isRecording" class="overlay-item recording">
+              <i class="fas fa-circle text-danger"></i> REC {{ recordingTime }}
             </div>
-            <div class="camera-overlay">
-              <div class="overlay-item altitude">{{ droneData.height }}m</div>
-              <div class="overlay-item speed">{{ droneData.speed }}m/s</div>
-              <div v-if="isRecording" class="overlay-item recording">
-                <i class="fas fa-circle text-danger"></i> REC {{ recordingTime }}
-              </div>
-              <div class="overlay-item battery">
-                <i class="fas fa-battery-half"></i> {{ droneData.battery }}%
-              </div>
+            <div class="overlay-item battery">
+              <i class="fas fa-battery-half"></i> {{ droneData.battery }}%
             </div>
           </div>
-      </div>
-
-      <div class="drone-controls grid-item">
-        <div class="card-header">
-          <h2>Contrôles du drone</h2>
-        </div>
-        <div class="controls-grid">
-          <button @click="sendCommand('takeoff')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-up"></i> Décollage
-          </button>
-          <button @click="sendCommand('land')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-down"></i> Atterrissage
-          </button>
-          <button @click="sendCommand('move/forward/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-up"></i> Avancer
-          </button>
-          <button @click="sendCommand('move/back/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-down"></i> Reculer
-          </button>
-          <button @click="sendCommand('move/left/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-left"></i> Gauche
-          </button>
-          <button @click="sendCommand('move/right/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-right"></i> Droite
-          </button>
-          <button @click="sendCommand('emergency')" :disabled="!isConnected" class="control-btn emergency">
-            <i class="fas fa-exclamation-triangle"></i> Arrêt d'urgence
-          </button>
         </div>
       </div>
 
+      <!-- Section Statistiques de Vol -->
       <div class="flight-stats grid-item">
         <div class="card-header">
           <h2>Statistiques de vol</h2>
@@ -102,6 +75,7 @@
         </div>
       </div>
 
+      <!-- Section des Données de Vol -->
       <div class="flight-data grid-item">
         <div class="card-header">
           <h2>Données de vol</h2>
@@ -126,14 +100,13 @@
           <div class="data-row">
             <div class="data-label">Mode de vol</div>
             <div class="data-value">
-              <span class="mode-badge">Manuel</span>
+              <span class="mode-badge">{{ currentControlMode }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Conservez les autres éléments de votre grid mais adaptez-les avec les données dynamiques -->
-      
+      <!-- Section Photos Récentes -->
       <div class="recent-photos grid-item">
         <div class="card-header">
           <h2>Photos récentes</h2>
@@ -149,6 +122,348 @@
           </div>
         </div>
       </div>
+
+      <!-- NOUVELLE SECTION: Modes de contrôle -->
+      <div class="control-modes grid-item large">
+        <div class="card-header">
+          <h2>Modes de contrôle</h2>
+          <div class="mode-selector">
+            <button 
+              v-for="mode in controlModes" 
+              :key="mode.id" 
+              @click="switchControlMode(mode.id)"
+              :class="{ active: currentControlMode === mode.id }"
+              class="mode-btn">
+              <i :class="mode.icon"></i> {{ mode.name }}
+            </button>
+          </div>
+        </div>
+        <div class="control-content">
+          <!-- Mode contrôle clavier -->
+          <div v-if="currentControlMode === 'keyboard'" class="control-panel">
+            <div class="keyboard-instructions">
+              <h3>Contrôle par clavier</h3>
+              <p>Utilisez les touches suivantes pour contrôler le drone:</p>
+              <div class="key-grid">
+                <div class="key-group">
+                  <div class="key-item">
+                    <span class="key">↑</span>
+                    <span class="key-label">Monter</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">↓</span>
+                    <span class="key-label">Descendre</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">←</span>
+                    <span class="key-label">Rotation gauche</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">→</span>
+                    <span class="key-label">Rotation droite</span>
+                  </div>
+                </div>
+                <div class="key-group">
+                  <div class="key-item">
+                    <span class="key">Z</span>
+                    <span class="key-label">Avancer</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">S</span>
+                    <span class="key-label">Reculer</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">Q</span>
+                    <span class="key-label">Déplacement gauche</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">D</span>
+                    <span class="key-label">Déplacement droite</span>
+                  </div>
+                </div>
+                <div class="key-group">
+                  <div class="key-item">
+                    <span class="key">A</span>
+                    <span class="key-label">Décollage</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">E</span>
+                    <span class="key-label">Atterrissage</span>
+                  </div>
+                  <div class="key-item">
+                    <span class="key">P</span>
+                    <span class="key-label">Arrêt d'urgence</span>
+                  </div>
+                </div>
+              </div>
+              <div class="keyboard-toggle">
+                <button @click="toggleKeyboardControls" :class="{ 'btn-active': keyboardEnabled, 'btn-inactive': !keyboardEnabled }">
+                  {{ keyboardEnabled ? 'Désactiver contrôle clavier' : 'Activer contrôle clavier' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode contrôle vocal -->
+          <div v-if="currentControlMode === 'voice'" class="control-panel">
+            <div class="voice-control">
+              <h3>Contrôle vocal</h3>
+              <div class="voice-recognition">
+                <div class="recognition-header">
+                  <h4>Reconnaissance Vocale</h4>
+                  <div class="status-indicator" :class="{ 'is-active': isListening }">
+                    <i class="fas" :class="isListening ? 'fa-microphone' : 'fa-microphone-slash'"></i>
+                    <span>{{ isListening ? 'Écoute active' : 'Écoute inactive' }}</span>
+                  </div>
+                </div>
+                
+                <div class="mic-visualizer">
+                  <div class="mic-icon" :class="{ 'pulse': isListening }">
+                    <i class="fas fa-microphone"></i>
+                  </div>
+                  <div class="wave-container" :class="{ 'active': isListening }">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                  </div>
+                </div>
+                
+                <div v-if="recognizedText" class="recognized-text">
+                  Texte reconnu: "{{ recognizedText }}"
+                </div>
+                
+                <button @click="toggleSpeechRecognition" class="btn-speech" :class="{ 'btn-active': isListening, 'btn-inactive': !isListening }">
+                  <i :class="isListening ? 'fas fa-stop' : 'fas fa-microphone'"></i>
+                  {{ isListening ? 'Arrêter l\'écoute' : 'Démarrer l\'écoute' }}
+                </button>
+              </div>
+
+              <div class="voice-commands">
+                <h4>Commandes vocales disponibles</h4>
+                <div class="commands-list">
+                  <div class="command-category">
+                    <h5>Contrôles de base</h5>
+                    <div class="command-item">
+                      <span class="command-phrase">"Décollage"</span>
+                      <span class="command-action">Fait décoller le drone</span>
+                    </div>
+                    <div class="command-item">
+                      <span class="command-phrase">"Atterrissage"</span>
+                      <span class="command-action">Fait atterrir le drone</span>
+                    </div>
+                  </div>
+                  <div class="command-category">
+                    <h5>Déplacements</h5>
+                    <div class="command-item">
+                      <span class="command-phrase">"Avance"</span>
+                      <span class="command-action">Déplace le drone vers l'avant</span>
+                    </div>
+                    <div class="command-item">
+                      <span class="command-phrase">"Recule"</span>
+                      <span class="command-action">Déplace le drone vers l'arrière</span>
+                    </div>
+                    <div class="command-item">
+                      <span class="command-phrase">"Gauche" / "Droite"</span>
+                      <span class="command-action">Déplace le drone latéralement</span>
+                    </div>
+                    <div class="command-item">
+                      <span class="command-phrase">"Monte" / "Descend"</span>
+                      <span class="command-action">Change l'altitude du drone</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode contrôle gestuel -->
+          <div v-if="currentControlMode === 'gesture'" class="control-panel">
+            <div class="gesture-control">
+              <h3>Contrôle gestuel</h3>
+              <div class="gesture-status">
+                <div class="status-indicator" :class="{ 'is-active': isGestureEnabled }">
+                  <span class="status-dot"></span>
+                  <span class="status-text">{{ isGestureEnabled ? 'Reconnaissance gestuelle activée' : 'Reconnaissance gestuelle désactivée' }}</span>
+                </div>
+                <button 
+                  @click="toggleGestureRecognition" 
+                  :disabled="!isDroneConnected || isGestureLoading"
+                  :class="{ 'btn-active': isGestureEnabled, 'btn-inactive': !isGestureEnabled }"
+                  class="btn-large">
+                  <i :class="isGestureLoading ? 'fas fa-spinner fa-spin' : (isGestureEnabled ? 'fas fa-hand-paper' : 'fas fa-play')"></i>
+                  {{ isGestureEnabled ? 'Désactiver la reconnaissance' : 'Activer la reconnaissance' }}
+                </button>
+              </div>
+
+              <div class="gesture-guide">
+                <h4>Guide des gestes</h4>
+                <div class="gestures-grid">
+                  <div class="gesture-item">
+                    <div class="gesture-image">
+                      <i class="fas fa-hand-paper"></i>
+                    </div>
+                    <div class="gesture-description">
+                      <h5>Main ouverte</h5>
+                      <p>Décollage</p>
+                    </div>
+                  </div>
+                  <div class="gesture-item">
+                    <div class="gesture-image">
+                      <i class="fas fa-fist-raised"></i>
+                    </div>
+                    <div class="gesture-description">
+                      <h5>Poing fermé</h5>
+                      <p>Atterrissage</p>
+                    </div>
+                  </div>
+                  <div class="gesture-item">
+                    <div class="gesture-image">
+                      <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <div class="gesture-description">
+                      <h5>Pouce en haut</h5>
+                      <p>Monter</p>
+                    </div>
+                  </div>
+                  <div class="gesture-item">
+                    <div class="gesture-image">
+                      <i class="fas fa-thumbs-down"></i>
+                    </div>
+                    <div class="gesture-description">
+                      <h5>Pouce en bas</h5>
+                      <p>Descendre</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode vision et reconnaissance -->
+          <div v-if="currentControlMode === 'vision'" class="control-panel">
+            <div class="vision-control">
+              <h3>Vision et reconnaissance</h3>
+              
+              <div class="vision-options">
+                <div class="option-group">
+                  <h4>Mode de suivi</h4>
+                  <div class="option-buttons">
+                    <button class="btn-outline active">
+                      <i class="fas fa-user"></i> Personne
+                    </button>
+                    <button class="btn-outline">
+                      <i class="fas fa-cube"></i> Objet
+                    </button>
+                    <button class="btn-outline">
+                      <i class="fas fa-map-marker-alt"></i> Point GPS
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="option-group">
+                  <h4>Distance de suivi</h4>
+                  <input type="range" min="1" max="10" value="3" class="slider">
+                  <div class="range-labels">
+                    <span>Proche</span>
+                    <span>Éloigné</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="face-recognition-toggle">
+                <button @click="toggleFaceRecognitionSection" class="btn-outline">
+                  <i class="fas fa-user-plus"></i> {{ faceRecognitionExpanded ? 'Masquer' : 'Gérer' }} la reconnaissance faciale
+                </button>
+              </div>
+              
+              <div v-if="faceRecognitionExpanded" class="face-recognition">
+                <div class="upload-area" 
+                    :class="{ 'drag-over': isDragging, 'has-image': previewImage }"
+                    @dragover.prevent="onDragOver"
+                    @dragleave.prevent="onDragLeave"
+                    @drop.prevent="onDrop">
+                  <div v-if="!previewImage" class="upload-placeholder">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Glissez une photo ou <span class="browse-link" @click="triggerFileInput">parcourez</span></p>
+                  </div>
+                  <div v-else class="preview-container">
+                    <img :src="previewImage" alt="Aperçu" class="preview-image" />
+                    <button class="btn-remove-image" @click="removeImage">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <input type="file" 
+                        ref="fileInput" 
+                        class="file-input" 
+                        accept=".jpg,.jpeg,.png,.webp" 
+                        @change="onFileSelected" />
+                </div>
+                
+                <div class="person-form">
+                  <div class="form-group">
+                    <input type="text" 
+                          id="personName" 
+                          v-model="personName" 
+                          placeholder="Nom de la personne" 
+                          class="person-input"
+                          :disabled="!previewImage" />
+                  </div>
+                  <div class="form-controls">
+                    <button @click="savePerson" 
+                            :disabled="!canSavePerson"
+                            class="btn-primary">
+                      <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="face-tracking-section">
+                <div class="section-header">
+                  <h4>Suivi facial automatique</h4>
+                  <button @click="toggleFaceTrackingSection" class="btn-outline">
+                    <i class="fas fa-eye"></i> {{ faceTrackingExpanded ? 'Masquer' : 'Afficher' }} le suivi facial
+                  </button>
+                </div>
+                
+                <!-- Intégration du composant FaceTrackingControl -->
+                <FaceTrackingControl v-if="faceTrackingExpanded" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Contrôles du Drone -->
+      <div class="drone-controls grid-item">
+        <div class="card-header">
+          <h2>Contrôles du drone</h2>
+        </div>
+        <div class="controls-grid">
+          <button @click="sendCommand('takeoff')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-up"></i> Décollage
+          </button>
+          <button @click="sendCommand('land')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-down"></i> Atterrissage
+          </button>
+          <button @click="sendCommand('move/forward/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-up"></i> Avancer
+          </button>
+          <button @click="sendCommand('move/back/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-down"></i> Reculer
+          </button>
+          <button @click="sendCommand('move/left/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-left"></i> Gauche
+          </button>
+          <button @click="sendCommand('move/right/30')" :disabled="!isConnected" class="control-btn">
+            <i class="fas fa-arrow-circle-right"></i> Droite
+          </button>
+          <button @click="sendCommand('emergency')" :disabled="!isConnected" class="control-btn emergency">
+            <i class="fas fa-exclamation-triangle"></i> Arrêt d'urgence
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -156,15 +471,23 @@
 <script>
 import axios from 'axios';
 import emitter from '../../eventBus';
+import keyboardControls from '../../mixins/keyboardControls';
+import gestureService from '../../services/gestureService';
+import FaceTrackingControl from '../../components/FaceTrackingControl.vue';
+
 
 const API_URL = 'http://localhost:5000';
 
 export default {
   name: 'DashboardViewPage',
+  mixins: [keyboardControls],
+  components: {
+    FaceTrackingControl
+  },
   data() {
     return {
       isConnected: false,
-      videoUrl: `${API_URL}/video_feed`,
+      videoUrl: `${API_URL}/video/feed`,
       videoRefreshKey: 0,
       droneData: {
         battery: 0,
@@ -174,37 +497,138 @@ export default {
         speed: 0,
         signal: 0
       },
-      images: [], // Images statiques chargées
-      capturedImages: [], // Images capturées durant la session
+      capturedImages: [],
       dataUpdateInterval: null,
       consecutiveErrors: 0,
-      isConnected: false,
-      videoUrl: `${API_URL}/video/feed`,
       videoErrorCount: 0,
       maxVideoErrors: 3,
       isRecording: false,
       recordingTime: '00:00',
       recordingInterval: null,
-      recordingStartTime: 0
+      recordingStartTime: 0,
+      
+      // Modes de contrôle
+      controlModes: [
+        { id: 'keyboard', name: 'Clavier', icon: 'fas fa-keyboard' },
+        { id: 'voice', name: 'Voix', icon: 'fas fa-microphone' },
+        { id: 'gesture', name: 'Gestes', icon: 'fas fa-hand-paper' },
+        { id: 'vision', name: 'Vision', icon: 'fas fa-eye' }
+      ],
+      currentControlMode: 'keyboard',
+      
+      // Voice control
+      isListening: false,
+      recognizedText: '',
+      recognitionEnabled: true,
+      commandsMap: {
+        'décollage': 'takeoff',
+        'décoller': 'takeoff',
+        'envole': 'takeoff',
+        'atterrissage': 'land',
+        'atterrir': 'land',
+        'poser': 'land',
+        'avance': 'moveForward',
+        'recule': 'moveBackward',
+        'gauche': 'moveLeft',
+        'droite': 'moveRight',
+        'monte': 'moveUp',
+        'descend': 'moveDown',
+        'descendre': 'moveDown',
+        'tourne à gauche': 'rotateLeft',
+        'rotation gauche': 'rotateLeft',
+        'tourne à droite': 'rotateRight',
+        'rotation droite': 'rotateRight',
+        'looping en avant': 'flipForward',
+        'looping avant': 'flipForward',
+        'looping en arrière': 'flipBackward',
+        'looping arrière': 'flipBackward',
+        'looping à gauche': 'flipLeft',
+        'looping gauche': 'flipLeft',
+        'looping à droite': 'flipRight',
+        'looping droite': 'flipRight',
+        'stop': 'emergencyStop',
+        'arrêt': 'emergencyStop',
+        'urgence': 'emergencyStop'
+      },
+      recognition: null,
+      recognitionTimeout: null,
+      
+      // Gesture control
+      isGestureEnabled: false,
+      isDroneConnected: false,
+      isGestureLoading: false,
+      gestureStatus: null,
+      statusInterval: null,
+      
+      // Vision control
+      faceRecognitionExpanded: false,
+      faceTrackingExpanded: false,
+      isDragging: false,
+      previewImage: null,
+      selectedFile: null,
+      personName: '',
+      personRelation: 'family',
+      people: []
+    };
+  },
+  computed: {
+    formattedTimeUntilNext() {
+      if (!this.gestureStatus) return '0.0s';
+      
+      const time = this.gestureStatus.time_until_next.toFixed(1);
+      return `${time}s`;
+    },
+    canSavePerson() {
+      return this.previewImage !== null && this.personName.trim() !== '';
+    }
+  },
+  watch: {
+    currentControlMode(newVal) {
+      // Désactiver les modes précédents si nécessaire
+      if (newVal !== 'voice' && this.isListening) {
+        this.stopSpeechRecognition();
+      }
+      
+      if (newVal !== 'gesture' && this.isGestureEnabled) {
+        this.stopGestureRecognition();
+      }
+      
+      // Activation spécifique pour chaque mode
+      if (newVal === 'keyboard') {
+        this.enableKeyboardControls();
+      } else if (newVal === 'voice') {
+        this.checkSpeechRecognitionSupport();
+      } else if (newVal === 'gesture') {
+        this.checkGestureStatus();
+      }
     }
   },
   mounted() {
     // Vérifier l'état de la connexion au chargement
     this.checkDroneStatus();
     
+    // Vérifier si la reconnaissance vocale est supportée
+    this.checkSpeechRecognitionSupport();
+    
+    // Charger la liste des personnes connues (pour la vision)
+    this.loadPeople();
+    
     // Écouter les événements avec l'émetteur
     emitter.on('drone-connected', () => {
       this.checkDroneStatus();
     });
     
-    emitter.on('drone-disconnected', () => {
+    emitter.off('drone-disconnected', () => {
       this.isConnected = false;
       if (this.dataUpdateInterval) {
         clearInterval(this.dataUpdateInterval);
       }
     });
+    
+    // Activer les contrôles clavier par défaut
+    this.enableKeyboardControls();
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // Nettoyer les écouteurs d'événements
     emitter.off('drone-connected');
     emitter.off('drone-disconnected');
@@ -213,12 +637,27 @@ export default {
     if (this.dataUpdateInterval) {
       clearInterval(this.dataUpdateInterval);
     }
+    
+    if (this.statusInterval) {
+      clearInterval(this.statusInterval);
+    }
+    
+    // Arrêter la reconnaissance vocale si active
+    if (this.isListening) {
+      this.stopSpeechRecognition();
+    }
+    
+    // Nettoyer les écouteurs d'événements du clavier
+    this.disableKeyboardControls();
   },
   methods: {
+    // Méthodes principales du dashboard
     async checkDroneStatus() {
       try {
         const response = await axios.get(`${API_URL}/status`);
         this.isConnected = response.data.connected;
+        this.isDroneConnected = response.data.connected;
+        
         if (this.isConnected) {
           this.droneData = response.data.drone_data;
           this.startPollingData();
@@ -229,37 +668,25 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la vérification de l'état du drone:", error);
         this.isConnected = false;
+        this.isDroneConnected = false;
         localStorage.removeItem('droneConnected');
       }
+    },
+
+    toggleFaceTrackingSection() {
+      this.faceTrackingExpanded = !this.faceTrackingExpanded;
     },
     
     async connectDrone() {
       // Rediriger l'utilisateur vers la page de connexion
-      this.$router.push('/connection');
-    },
-    
-    handleDroneConnected(droneInfo) {
-      this.isConnected = true;
-      // Mise à jour initiale des données du drone
-      if (droneInfo) {
-        this.droneData.battery = droneInfo.battery || this.droneData.battery;
-        this.droneData.temperature = droneInfo.temp || this.droneData.temperature;
-        this.droneData.height = droneInfo.height || this.droneData.height;
-      }
-      this.startPollingData();
-      this.refreshVideo();
-    },
-    
-    handleDroneDisconnected() {
-      this.isConnected = false;
-      if (this.dataUpdateInterval) {
-        clearInterval(this.dataUpdateInterval);
-      }
+      this.$router.push('/connect');
     },
     
     refreshVideo() {
-      // Force le rafraîchissement du flux vidéo
-      this.videoUrl = `${API_URL}/video_feed?timestamp=${new Date().getTime()}`;
+      // Force le rafraîchissement du flux vidéo avec un timestamp pour éviter la mise en cache
+      this.videoUrl = `${API_URL}/video/feed?timestamp=${new Date().getTime()}`;
+      // Réinitialiser le compteur d'erreurs si la vidéo se charge correctement
+      this.videoErrorCount = 0;
     },
     
     startPollingData() {
@@ -281,6 +708,7 @@ export default {
             this.consecutiveErrors += 1;
             if (this.consecutiveErrors > 3) {
               this.isConnected = false;
+              this.isDroneConnected = false;
               clearInterval(this.dataUpdateInterval);
               localStorage.removeItem('droneConnected');
             }
@@ -301,10 +729,19 @@ export default {
       }
     },
     
-    // Les autres méthodes restent les mêmes (handleVideoError, takePhoto, toggleFullscreen, etc.)
     handleVideoError() {
       console.warn("Erreur dans le chargement du flux vidéo, tentative de reconnexion...");
-      this.refreshVideo();
+      this.videoErrorCount++;
+      
+      // Si trop d'erreurs consécutives, considérer que la vidéo n'est pas disponible
+      if (this.videoErrorCount > this.maxVideoErrors) {
+        console.error("Impossible de charger le flux vidéo après plusieurs tentatives");
+      } else {
+        // Attendre un peu avant de réessayer
+        setTimeout(() => {
+          this.refreshVideo();
+        }, 2000);
+      }
     },
     
     takePhoto() {
@@ -384,36 +821,6 @@ export default {
       const distance = this.droneData.speed * this.droneData.flight_time * 0.3;
       return Math.round(distance);
     },
-
-    handleVideoError() {
-      console.warn("Erreur dans le chargement du flux vidéo, tentative de reconnexion...");
-      this.videoErrorCount++;
-      
-      // Si trop d'erreurs consécutives, considérer que la vidéo n'est pas disponible
-      if (this.videoErrorCount > this.maxVideoErrors) {
-        console.error("Impossible de charger le flux vidéo après plusieurs tentatives");
-      } else {
-        // Attendre un peu avant de réessayer
-        setTimeout(() => {
-          this.refreshVideo();
-        }, 2000);
-      }
-    },
-    
-    refreshVideo() {
-      // Force le rafraîchissement du flux vidéo avec un timestamp pour éviter la mise en cache
-      this.videoUrl = `${API_URL}/video/feed?timestamp=${new Date().getTime()}`;
-      // Réinitialiser le compteur d'erreurs si la vidéo se charge correctement
-      this.videoErrorCount = 0;
-    },
-    
-    toggleRecording() {
-      if (this.isRecording) {
-        this.stopRecording();
-      } else {
-        this.startRecording();
-      }
-    },
     
     startRecording() {
       if (!this.isConnected) return;
@@ -428,9 +835,6 @@ export default {
         const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
         this.recordingTime = `${minutes}:${seconds}`;
       }, 1000);
-      
-      // Envoyer la commande au backend si nécessaire
-      // axios.get(`${API_URL}/video/start_recording`);
     },
     
     stopRecording() {
@@ -441,421 +845,624 @@ export default {
       const finalRecordingTime = this.recordingTime;
       this.recordingTime = '00:00';
       
-      // Envoyer la commande au backend si nécessaire
-      // axios.get(`${API_URL}/video/stop_recording`);
-      
-      // Notification de fin d'enregistrement
       console.log(`Enregistrement terminé: ${finalRecordingTime}`);
+    },
+    
+    // Méthodes pour changer de mode de contrôle
+    switchControlMode(mode) {
+      this.currentControlMode = mode;
+    },
+    
+    // Méthodes de contrôle vocal
+    checkSpeechRecognitionSupport() {
+      // Vérifier si le navigateur supporte l'API Web Speech
+      this.recognitionEnabled = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+      
+      if (!this.recognitionEnabled && this.currentControlMode === 'voice') {
+        console.warn('La reconnaissance vocale n\'est pas supportée par ce navigateur.');
+      }
+    },
+    
+    toggleSpeechRecognition() {
+      if (!this.recognitionEnabled) {
+        alert('La reconnaissance vocale n\'est pas disponible sur ce navigateur.');
+        return;
+      }
+      
+      if (this.isListening) {
+        this.stopSpeechRecognition();
+      } else {
+        this.startSpeechRecognition();
+      }
+    },
+    
+    startSpeechRecognition() {
+      // S'assurer qu'aucune instance précédente n'est en cours
+      this.stopSpeechRecognition();
+      
+      try {
+        // Création de l'objet de reconnaissance vocale
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new SpeechRecognition();
+        
+        // Configuration
+        this.recognition.lang = 'fr-FR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
+        this.recognition.maxAlternatives = 1;
+        
+        // Événements
+        this.recognition.onstart = () => {
+          this.isListening = true;
+          console.log('Reconnaissance vocale démarrée');
+        };
+        
+        this.recognition.onresult = (event) => {
+          // Vérifier que l'événement et les résultats sont valides
+          if (event && event.results && event.results[0]) {
+            const transcript = event.results[0][0].transcript.toLowerCase().trim();
+            console.log('Texte reconnu:', transcript);
+            this.recognizedText = transcript;
+            
+            // Rechercher la commande correspondante
+            this.processVoiceCommand(transcript);
+          }
+        };
+        
+        this.recognition.onerror = (event) => {
+          console.error('Erreur de reconnaissance vocale:', event.error);
+          this.isListening = false;
+        };
+        
+        this.recognition.onend = () => {
+          console.log('Reconnaissance vocale terminée');
+          
+          // Redémarrer automatiquement la reconnaissance si elle était active
+          if (this.isListening && this.recognition) {
+            // Attendre un court instant avant de redémarrer
+            this.recognitionTimeout = setTimeout(() => {
+              // Vérifier à nouveau que le composant est monté et que l'utilisateur n'a pas désactivé l'écoute
+              if (this.isListening && this.recognition) {
+                try {
+                  this.recognition.start();
+                } catch (e) {
+                  console.error('Erreur lors du redémarrage de la reconnaissance:', e);
+                  this.isListening = false;
+                }
+              }
+            }, 500);
+          } else {
+            this.isListening = false;
+          }
+        };
+        
+        // Démarrer la reconnaissance
+        this.recognition.start();
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation de la reconnaissance vocale:', error);
+        this.isListening = false;
+        this.recognition = null;
+      }
+    },
+    
+    stopSpeechRecognition() {
+      // Arrêter tous les timeouts
+      if (this.recognitionTimeout) {
+        clearTimeout(this.recognitionTimeout);
+        this.recognitionTimeout = null;
+      }
+      
+      // Arrêter la reconnaissance
+      if (this.recognition) {
+        try {
+          this.recognition.stop();
+        } catch (error) {
+          console.error('Erreur lors de l\'arrêt de la reconnaissance vocale:', error);
+        }
+        
+        // Nettoyer les références
+        this.recognition = null;
+      }
+      
+      this.isListening = false;
+    },
+    
+    processVoiceCommand(text) {
+      let commandFound = false;
+      
+      // Rechercher dans le mappage des commandes
+      for (const [phrase, command] of Object.entries(this.commandsMap)) {
+        if (text.includes(phrase)) {
+          console.log(`Commande vocale détectée: "${phrase}" => ${command}`);
+          this.sendCommand(command);
+          commandFound = true;
+          break;
+        }
+      }
+      
+      if (!commandFound) {
+        console.log('Aucune commande reconnue dans:', text);
+      }
+    },
+    
+    // Méthodes de contrôle gestuel
+    async toggleGestureRecognition() {
+      this.isGestureLoading = true;
+      
+      try {
+        if (this.isGestureEnabled) {
+          // Désactiver la reconnaissance
+          const response = await gestureService.stopGestureRecognition();
+          if (response.data.success) {
+            this.isGestureEnabled = false;
+            this.$notify && this.$notify.info('Reconnaissance de gestes désactivée');
+            this.stopStatusPolling();
+          } else {
+            this.$notify && this.$notify.error(`Erreur: ${response.data.message}`);
+          }
+        } else {
+          // Activer la reconnaissance
+          const response = await gestureService.startGestureRecognition();
+          if (response.data.success) {
+            this.isGestureEnabled = true;
+            this.$notify && this.$notify.success('Reconnaissance de gestes activée');
+            this.startStatusPolling();
+          } else {
+            this.$notify && this.$notify.error(`Erreur: ${response.data.message}`);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la modification de l\'état de la reconnaissance:', error);
+        this.$notify && this.$notify.error('Erreur de communication avec le serveur');
+      } finally {
+        this.isGestureLoading = false;
+      }
+    },
+    
+    async checkGestureStatus() {
+      try {
+        const response = await gestureService.getGestureStatus();
+        this.gestureStatus = response.data;
+        this.isGestureEnabled = response.data.is_running;
+      } catch (error) {
+        console.error('Erreur lors de la récupération du statut de la reconnaissance:', error);
+      }
+    },
+    
+    startStatusPolling() {
+      // Arrêter l'intervalle précédent si existant
+      this.stopStatusPolling();
+      
+      // Démarrer un nouvel intervalle
+      this.statusInterval = setInterval(() => {
+        this.checkGestureStatus();
+      }, 500); // Mise à jour toutes les 500ms
+    },
+    
+    stopStatusPolling() {
+      if (this.statusInterval) {
+        clearInterval(this.statusInterval);
+        this.statusInterval = null;
+      }
+    },
+    
+    // Méthodes de contrôle par vision
+    toggleFaceRecognitionSection() {
+      this.faceRecognitionExpanded = !this.faceRecognitionExpanded;
+    },
+    
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    
+    onDragOver(event) {
+      this.isDragging = true;
+    },
+    
+    onDragLeave(event) {
+      this.isDragging = false;
+    },
+    
+    onDrop(event) {
+      this.isDragging = false;
+      
+      if (event.dataTransfer.files.length) {
+        this.handleFile(event.dataTransfer.files[0]);
+      }
+    },
+    
+    onFileSelected(event) {
+      if (event.target.files.length) {
+        this.handleFile(event.target.files[0]);
+      }
+    },
+    
+    handleFile(file) {
+      // Vérifier le type de fichier
+      const acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      
+      if (!acceptedTypes.includes(file.type)) {
+        alert('Format de fichier non supporté. Veuillez utiliser JPG, PNG ou WEBP.');
+        return;
+      }
+      
+      // Vérifier la taille du fichier (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert('Le fichier est trop volumineux. Taille maximale: 5MB');
+        return;
+      }
+      
+      // Prévisualiser l'image
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.previewImage = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    
+    removeImage() {
+      this.previewImage = null;
+      this.selectedFile = null;
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
+    },
+    
+    savePerson() {
+      if (!this.canSavePerson) return;
+      
+      // Créer un nouvel objet personne
+      const newPerson = {
+        id: Date.now(),
+        name: this.personName,
+        relation: this.personRelation,
+        image: this.previewImage,
+        dateAdded: new Date().toISOString()
+      };
+      
+      // Ajouter à la liste
+      this.people.unshift(newPerson);
+      
+      // Sauvegarder dans le localStorage
+      const storedPeople = JSON.parse(localStorage.getItem('recognitionPeople') || '[]');
+      storedPeople.unshift(newPerson);
+      localStorage.setItem('recognitionPeople', JSON.stringify(storedPeople));
+      
+      // Réinitialiser le formulaire
+      this.resetForm();
+      
+      // Notification de succès
+      this.$notify && this.$notify.success('Personne ajoutée avec succès');
+    },
+    
+    resetForm() {
+      this.removeImage();
+      this.personName = '';
+      this.personRelation = 'family';
+    },
+    
+    loadPeople() {
+      // Récupérer du localStorage
+      const storedPeople = JSON.parse(localStorage.getItem('recognitionPeople') || '[]');
+      this.people = storedPeople;
     }
   }
 };
 </script>
-  
-  <style scoped>
-  .dashboard-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
-  
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  
-  .dashboard-header h1 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--text-color);
-  }
-  
-  .dashboard-header h1 i {
-    color: var(--primary-color);
-  }
-  
-  .connection-status {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    background-color: var(--light-gray);
-  }
-  
-  .connection-status.connected {
-    background-color: rgba(46, 204, 113, 0.2);
-    color: #27ae60;
-  }
-  
-  .connection-status .status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #27ae60;
-    display: inline-block;
-  }
-  
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: 1.5rem;
-  }
 
-  .empty-photo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--light-gray);
-    color: var(--medium-gray);
-    font-size: 2rem;
-  }
+<style scoped>
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
 
-  .empty-camera {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    color: var(--medium-gray);
-    font-size: 3rem;
-    padding: 2rem;
-  }
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
 
-  .empty-camera p {
-    font-size: 1.2rem;
-    margin: 1rem 0;
-    color: var(--dark-gray);
-  }
+.dashboard-header h1 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-color);
+}
 
-  .connect-btn, .refresh-btn {
-    margin-top: 1rem;
-    padding: 0.6rem 1.2rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius-md);
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
+.dashboard-header h1 i {
+  color: var(--primary-color);
+}
 
-  .connect-btn:hover, .refresh-btn:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-  }
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  background-color: var(--light-gray);
+}
 
+.connection-status.connected {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #27ae60;
+}
 
-  .empty-map {
-    background-color: var(--light-gray);
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--medium-gray);
-    font-size: 2rem;
-  }
+.connection-status .status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #e74c3c;
+}
 
-  .map-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .grid-item {
-    background-color: white;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-  }
-  
-  .large {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-  
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    background-color: var(--light-gray);
-    border-bottom: 1px solid var(--medium-gray);
-  }
-  
-  .card-header h2 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: var(--text-color);
-    font-weight: 600;
-  }
-  
-  .controls {
-    display: flex;
-    gap: 0.5rem;
-  }
-  
-  .btn-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: white;
-    color: var(--dark-gray);
-    border: 1px solid var(--medium-gray);
-    transition: all 0.2s ease;
-  }
-  
-  .btn-icon:hover {
-    background-color: var(--light-gray);
-    color: var(--primary-color);
-  }
-  
-  .btn-text {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--border-radius-sm);
-  }
-  
-  .btn-text:hover {
-    background-color: rgba(52, 152, 219, 0.1);
-  }
-  
-  /* Camera Feed */
-  .camera-content {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 400px;
-    background-color: #1e1e1e;
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-  }
+.connection-status.connected .status-indicator {
+  background-color: #27ae60;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+}
 
-  .camera-content img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 1.5rem;
+}
 
-  .camera-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
+.face-tracking-section {
+  margin-top: 1.5rem;
+}
 
-  .overlay-item {
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--border-radius-sm);
-    font-weight: 600;
-    width: fit-content;
-  }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
-  .overlay-item.altitude {
-    align-self: flex-start;
-  }
+.section-header h4 {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
 
-  .overlay-item.speed {
-    align-self: flex-end;
-  }
+.grid-item {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
 
-  .overlay-item.recording {
-    align-self: flex-start;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: rgba(231, 76, 60, 0.8);
-    animation: pulse 2s infinite;
-  }
+.large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
 
-  .overlay-item.battery {
-    align-self: flex-end;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: var(--light-gray);
+  border-bottom: 1px solid var(--medium-gray);
+}
 
-  .text-danger {
-    color: #e74c3c;
-  }
-  
-  /* Stats */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    padding: 1rem;
-    gap: 1rem;
-  }
-  
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 1rem;
-    background-color: var(--light-gray);
-    border-radius: var(--border-radius-sm);
-  }
-  
-  .stat-icon {
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-  }
-  
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 0.5rem;
-  }
-  
-  .stat-label {
-    font-size: 0.9rem;
-    color: var(--dark-gray);
-  }
-  
-  /* Flight Data */
-  .data-table {
-    padding: 1rem;
-  }
-  
-  .data-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--light-gray);
-  }
-  
-  .data-row:last-child {
-    border-bottom: none;
-  }
-  
-  .data-label {
-    color: var(--dark-gray);
-  }
-  
-  .data-value {
-    font-weight: 500;
-    color: var(--text-color);
-  }
-  
-  .mode-badge {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.85rem;
-  }
-  
-  /* GPS Location */
-  .map-container {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-  }
-  
-  .map-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .map-marker {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  
-  .drone-marker {
-    top: 40%;
-    left: 60%;
-    color: var(--primary-color);
-  }
-  
-  .home-marker {
-    top: 60%;
-    left: 30%;
-    color: var(--accent-color);
-  }
-  
-  .coordinates {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    font-size: 0.9rem;
-  }
-  
-  .coordinate-label {
-    color: var(--dark-gray);
-    margin-right: 0.5rem;
-  }
-  
-  .coordinate-value {
-    font-weight: 500;
-    color: var(--text-color);
-  }
-  
-  /* Photos */
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    padding: 1rem;
-  }
-  
-  .photo-item {
-    border-radius: var(--border-radius-sm);
-    overflow: hidden;
-    aspect-ratio: 1;
-  }
-  
-  .photo-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-  }
-  
-  .photo-item:hover img {
-    transform: scale(1.05);
-  }
+.card-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
 
-  .controls-grid {
+.btn-connect {
+  margin-left: 1rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Camera Feed */
+.camera-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background-color: #1e1e1e;
+  overflow: hidden;
+}
+
+.camera-content img {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.overlay-item {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  width: fit-content;
+}
+
+.overlay-item.altitude {
+  align-self: flex-start;
+}
+
+.overlay-item.speed {
+  align-self: flex-end;
+}
+
+.overlay-item.recording {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(231, 76, 60, 0.8);
+  animation: pulse 2s infinite;
+}
+
+.overlay-item.battery {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: var(--dark-gray);
+  border: 1px solid var(--medium-gray);
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background-color: var(--light-gray);
+  color: var(--primary-color);
+}
+
+.empty-camera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: var(--medium-gray);
+  font-size: 3rem;
+  padding: 2rem;
+}
+
+.empty-camera p {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+  color: var(--dark-gray);
+}
+
+.connect-btn, .refresh-btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.connect-btn:hover, .refresh-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-sm);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+}
+
+/* Flight Data */
+.data-table {
+  padding: 1rem;
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-label {
+  color: var(--dark-gray);
+}
+
+.data-value {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.mode-badge {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+}
+
+/* Controls */
+.controls-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
@@ -914,49 +1521,682 @@ export default {
   color: white;
 }
 
-.btn-connect {
-  margin-left: 1rem;
-  padding: 0.25rem 0.75rem;
+/* Photos */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.photo-item {
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photo-item:hover img {
+  transform: scale(1.05);
+}
+
+.empty-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--light-gray);
+  color: var(--medium-gray);
+  font-size: 2rem;
+}
+
+/* Control Modes Section */
+.control-modes {
+  border-top: 3px solid var(--primary-color);
+}
+
+.mode-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mode-btn {
+  padding: 0.4rem 0.8rem;
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+  background-color: rgba(52, 152, 219, 0.2);
+  color: var(--primary-color);
+}
+
+.mode-btn.active {
   background-color: var(--primary-color);
   color: white;
-  border: none;
+}
+
+.control-content {
+  padding: 1.5rem;
+}
+
+.control-panel {
+  min-height: 300px;
+}
+
+/* Keyboard Control */
+.keyboard-instructions {
+  background-color: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+}
+
+.keyboard-instructions h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.key-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.key-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.key {
+  width: 36px;
+  height: 36px;
+  background-color: white;
+  border: 1px solid var(--medium-gray);
   border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  box-shadow: 0 2px 0 var(--medium-gray);
+}
+
+.key-label {
   font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.keyboard-toggle {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Voice Control */
+.voice-control {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.voice-recognition {
+  background-color: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+}
+
+.recognition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.recognition-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+}
+
+.status-indicator.is-active {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--dark-gray);
+}
+
+.status-indicator.is-active .status-dot {
+  background-color: white;
+}
+
+.mic-visualizer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.mic-icon {
+  width: 64px;
+  height: 64px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+.wave-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+}
+
+.wave {
+  width: 4px;
+  height: 5px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
+
+.wave-container.active .wave {
+  animation: wave 1.2s infinite ease-in-out;
+}
+
+.wave-container.active .wave:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.wave-container.active .wave:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.wave-container.active .wave:nth-child(4) {
+  animation-delay: 0.6s;
+}
+
+.wave-container.active .wave:nth-child(5) {
+  animation-delay: 0.8s;
+}
+
+.recognized-text {
+  background-color: white;
+  padding: 1rem;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.btn-speech {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-active, .btn-inactive {
+  padding: 0.8rem 1rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-inactive {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-active {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.voice-commands {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-shadow);
+}
+
+.voice-commands h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--light-gray);
+  padding-bottom: 0.5rem;
+}
+
+.commands-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.command-category h5 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.command-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.command-item:last-child {
+  border-bottom: none;
+}
+
+.command-phrase {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.command-action {
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+}
+
+/* Gesture Control */
+.gesture-control {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gesture-status {
+  background-color: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.btn-large {
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 250px;
+}
+
+.btn-large:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gesture-guide {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-shadow);
+}
+
+.gesture-guide h4 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--light-gray);
+  padding-bottom: 0.5rem;
+}
+
+.gestures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.gesture-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.gesture-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.gesture-image {
+  width: 60px;
+  height: 60px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gesture-description h5 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.gesture-description p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--primary-color);
+}
+
+/* Vision Control */
+.vision-control {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.vision-options {
+  background-color: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+}
+
+.option-group {
+  margin-bottom: 1.5rem;
+}
+
+.option-group:last-child {
+  margin-bottom: 0;
+}
+
+.option-group h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.option-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btn-outline {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--medium-gray);
+  background-color: white;
+  color: var(--text-color);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-outline:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.slider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  background: var(--light-gray);
+  outline: none;
+  border-radius: 4px;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-color);
   cursor: pointer;
 }
 
-/* Style pour fixer la taille du flux vidéo */
-.camera-content img {
-  width: 100%;
-  height: 100%;
-  min-height: 400px;
-  object-fit: cover;
-  display: block;
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--dark-gray);
 }
 
-/* Pour les photos capturées */
-.photo-item {
+.face-recognition-toggle {
+  display: flex;
+  justify-content: center;
+}
+
+.face-recognition {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-shadow);
+  margin-top: 1.5rem;
+}
+
+.upload-area {
+  border: 2px dashed var(--medium-gray);
+  border-radius: var(--border-radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
   position: relative;
-  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: var(--light-gray);
 }
 
-.photo-item::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
+.upload-area.drag-over {
+  background-color: rgba(52, 152, 219, 0.05);
+  border-color: var(--primary-color);
+}
+
+.upload-area.has-image {
+  padding: 1rem;
+}
+
+.upload-placeholder {
+  text-align: center;
+}
+
+.upload-placeholder i {
+  font-size: 2rem;
+  color: var(--medium-gray);
+  margin-bottom: 1rem;
+}
+
+.upload-placeholder p {
+  color: var(--dark-gray);
+  margin-bottom: 0.5rem;
+}
+
+.browse-link {
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.file-input {
+  display: none;
+}
+
+.preview-container {
+  position: relative;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 50%);
-  pointer-events: none;
+  max-width: 200px;
 }
 
+.preview-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-remove-image {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  color: white;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.person-form {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.person-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--medium-gray);
+  border-radius: var(--border-radius-sm);
+  font-size: 1rem;
+}
+
+.form-controls {
+  display: flex;
+  align-items: flex-end;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animations */
 @keyframes pulse {
-  0%, 100% {
+  0% {
     opacity: 1;
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+  }
+  70% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    height: 5px;
   }
   50% {
-    opacity: 0.8;
+    height: 32px;
   }
 }
 
@@ -985,6 +2225,31 @@ export default {
     align-items: flex-start;
     gap: 1rem;
   }
+  
+  .key-grid {
+    flex-direction: column;
+  }
+  
+  .gestures-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .person-form {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .mode-selector {
+    flex-direction: column;
+  }
+  
+  .mode-btn {
+    width: 100%;
+  }
+  
+  .gestures-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
-  
