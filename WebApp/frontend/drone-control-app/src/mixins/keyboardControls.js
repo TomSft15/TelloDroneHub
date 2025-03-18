@@ -76,15 +76,10 @@ export default {
     handleKeyUp(event) {
       const key = event.key;
       
-      // Marquer la touche comme n'étant plus enfoncée
-      if (this.pressedKeys[key]) {
-        delete this.pressedKeys[key];
-      }
-      
       // Pour certaines commandes, il peut être utile d'envoyer une commande d'arrêt
       // quand la touche est relâchée (par exemple pour les mouvements)
       const command = this.keyCommands[key];
-      if (command && command.startsWith('move')) {
+      if (command && (command.startsWith('move') || command.startsWith('rotate'))) {
         // Envoyer une commande pour arrêter le mouvement
         this.stopMovement();
       }
