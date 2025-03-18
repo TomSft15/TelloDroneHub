@@ -736,17 +736,39 @@ export default {
         const response = await axios.get(`${API_URL}/drone/capture_photo`);
         
         if (response.data && response.data.success) {
-          // Le serveur renvoie l'image en base64
+          // Générer un nom unique pour l'image
+          const timestamp = new Date().toISOString().replace(/:/g, '-');
+          const imageName = `capture_${timestamp}.jpg`;
+          
+          // Vérifier si l'image est déjà en base64
+          let imageData = response.data.image;
+          
+          // Si l'image n'a pas le préfixe data:image, on l'ajoute
+          if (imageData && !imageData.startsWith('data:image')) {
+            imageData = `data:image/jpeg;base64,${imageData}`;
+          }
+          
+          // Ajouter à notre collection d'images
           this.capturedImages.unshift({
-            src: response.data.image,
-            name: `capture_${new Date().toISOString().replace(/:/g, '-')}.jpg`
+            src: imageData,
+            name: imageName
           });
           
-          localStorage.setItem('droneImages', JSON.stringify(this.capturedImages));
+          // Sauvegarder les images dans le localStorage
+          localStorage.setItem('droneImages', JSON.stringify(this.capturedImages.slice(0, 20)));
+          
+          console.log('Photo capturée avec succès');
           alert('Photo capturée !');
+          
+          return true;
+        } else {
+          alert('Erreur lors de la capture: ' + (response.data.message || 'Erreur inconnue'));
+          return false;
         }
       } catch (error) {
-        alert('Erreur de capture: ' + error.message);
+        console.error("Erreur lors de la capture de la photo:", error);
+        alert('Impossible de capturer la photo: ' + (error.message || 'Erreur inconnue'));
+        return false;
       }
     },
 
@@ -755,11 +777,27 @@ export default {
         // Récupérer les images sauvegardées dans le localStorage
         const savedImages = localStorage.getItem('droneImages');
         if (savedImages) {
-          this.capturedImages = JSON.parse(savedImages);
+          const parsedImages = JSON.parse(savedImages);
+          
+          // Vérifier que chaque image a le bon format pour l'élément src
+          this.capturedImages = parsedImages.map(img => {
+            // Si l'image n'a pas le préfixe data:image, on l'ajoute
+            if (img.src && !img.src.startsWith('data:image')) {
+              return {
+                ...img,
+                src: `data:image/jpeg;base64,${img.src}`
+              };
+            }
+            return img;
+          });
+          
           console.log(`${this.capturedImages.length} images chargées du localStorage`);
+        } else {
+          this.capturedImages = [];
         }
       } catch (error) {
         console.error("Erreur lors du chargement des images sauvegardées:", error);
+        this.capturedImages = [];
       }
     },
 

@@ -302,10 +302,12 @@ class CapturePhoto(Resource):
             # Récupérer le frame actuel
             frame = drone_service.drone.get_frame_read().frame
             
-            # Utiliser OpenCV pour sauvegarder l'image
+            # Utiliser OpenCV pour convertir l'image en JPEG
             import cv2
             import os
+            import base64
             from datetime import datetime
+            from io import BytesIO
             
             # Créer le dossier photos s'il n'existe pas
             if not os.path.exists("photos"):
@@ -315,13 +317,20 @@ class CapturePhoto(Resource):
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename = f"photos/photo_{timestamp}.jpg"
             
-            # Sauvegarder l'image
+            # Sauvegarder l'image sur le disque
             cv2.imwrite(filename, frame)
             
-            return {"success": True, "message": f"Photo prise et sauvegardée sous {filename}"}
+            # Convertir l'image en base64 pour l'envoyer au frontend
+            _, buffer = cv2.imencode('.jpg', frame)
+            img_str = base64.b64encode(buffer).decode('utf-8')
+            
+            return {
+                "success": True, 
+                "message": f"Photo prise et sauvegardée sous {filename}",
+                "image": f"data:image/jpeg;base64,{img_str}"  # Format correct pour l'affichage HTML
+            }
         except Exception as e:
             return {"success": False, "message": f"Erreur lors de la prise de photo: {str(e)}"}
-
 
 # Vous pouvez ajouter d'autres endpoints ici pour les commandes supplémentaires
 # comme les mouvements, la rotation, etc.
