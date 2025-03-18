@@ -3,7 +3,16 @@
     <div class="navbar-container">
       <div class="navbar-logo">
         <router-link to="/">
-          <span class="logo-text">Drone Control</span>
+          <div class="logo-container">
+            <div class="drone-animation">
+              <div class="drone-body"></div>
+              <div class="drone-propeller propeller-1"></div>
+              <div class="drone-propeller propeller-2"></div>
+              <div class="drone-propeller propeller-3"></div>
+              <div class="drone-propeller propeller-4"></div>
+            </div>
+            <span class="logo-text">Drone Control</span>
+          </div>
         </router-link>
       </div>
 
@@ -73,10 +82,10 @@ export default {
   color: white;
 }
 
-.logo-img {
-  width: 32px;
-  height: 32px;
-  margin-right: 0.5rem;
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .logo-text {
@@ -137,6 +146,58 @@ export default {
   background-color: white;
   border-radius: 10px;
   transition: all 0.3s ease-in-out;
+}
+
+/* Drone Animation */
+.drone-animation {
+  position: relative;
+  width: 38px;
+  height: 38px;
+}
+
+.drone-body {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 6px;
+  background-color: #3498db;
+  border-radius: 3px;
+}
+
+.drone-propeller {
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  background-color: #ecf0f1;
+  border-radius: 2px;
+  animation: spin 0.3s linear infinite;
+}
+
+.propeller-1 {
+  top: 25%;
+  left: 20%;
+}
+
+.propeller-2 {
+  top: 25%;
+  right: 20%;
+}
+
+.propeller-3 {
+  bottom: 25%;
+  left: 20%;
+}
+
+.propeller-4 {
+  bottom: 25%;
+  right: 20%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media screen and (max-width: 768px) {

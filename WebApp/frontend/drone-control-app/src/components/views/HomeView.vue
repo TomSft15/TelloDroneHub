@@ -272,11 +272,11 @@ export default {
 
 .drone-propeller {
   position: absolute;
-  width: 50px;
+  width: 60px;
   height: 8px;
   background-color: #3498db;
   border-radius: 4px;
-  animation: spin 0.5s linear infinite;
+  animation: spin 0.3s linear infinite;
 }
 
 .propeller-1 {
