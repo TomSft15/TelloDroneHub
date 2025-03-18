@@ -73,6 +73,10 @@ export default {
   flipRight() {
     return axios.get(`${API_URL}/drone/flip/right`);
   },
+
+  hover() {
+    return axios.get(`${API_URL}/drone/hover`);
+  },
   
   // Commandes spéciales
   emergencyStop() {

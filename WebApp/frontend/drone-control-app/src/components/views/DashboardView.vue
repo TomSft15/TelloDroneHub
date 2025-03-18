@@ -200,6 +200,10 @@
                       <span class="key-label">Atterrissage</span>
                     </div>
                     <div class="key-item">
+                      <span class="key">Space</span>
+                      <span class="key-label">Vol stationnaire</span>
+                    </div>
+                    <div class="key-item">
                       <span class="key">P</span>
                       <span class="key-label">Arrêt d'urgence</span>
                     </div>
