@@ -133,9 +133,18 @@ This project represents a complete interface between humans and drones, offering
 
 ---
 
-## License
+## Licence
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+Ce projet est sous licence GNU Affero General Public License v3.0 (AGPL-3.0).
+
+### Ce que cette licence signifie :
+
+- Vous êtes libre d'utiliser, modifier et distribuer ce logiciel.
+- Si vous modifiez le logiciel, vous devez distribuer ces modifications sous la même licence.
+- Si vous utilisez ce logiciel dans une application web ou un service réseau, vous devez rendre le code source complet disponible aux utilisateurs de ce service.
+- Cette licence protège contre l'appropriation du code dans des produits fermés, y compris les services web.
+
+Voir le fichier `LICENSE.md` pour le texte complet de la licence.
 
 ---
 
