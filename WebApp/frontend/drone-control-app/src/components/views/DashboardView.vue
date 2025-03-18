@@ -733,7 +733,7 @@ export default {
     async takePhoto() {
       try {
         // Faire une requête au serveur pour capturer l'image
-        const response = await axios.get(`${API_URL}/capture_photo`);
+        const response = await axios.get(`${API_URL}/drone/capture_photo`);
         
         if (response.data && response.data.success) {
           // Le serveur renvoie l'image en base64
