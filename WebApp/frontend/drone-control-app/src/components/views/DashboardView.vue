@@ -330,29 +330,8 @@
                 </div>
               </div>
               <div class="mode-content" v-if="visionEnabled">
-                <div class="vision-options">
-                  <div class="vision-status">
-                    <div class="status-indicator" :class="{ 'is-active': isFaceTrackingEnabled }">
-                      <span class="status-dot"></span>
-                      <span class="status-text">Suivi facial {{ isFaceTrackingEnabled ? 'activé' : 'désactivé' }}</span>
-                    </div>
-                    <button 
-                      @click="toggleFaceTracking" 
-                      :disabled="!isDroneConnected || isFaceTrackingLoading"
-                      :class="{ 'btn-active': isFaceTrackingEnabled, 'btn-inactive': !isFaceTrackingEnabled }"
-                      class="btn-medium">
-                      <i :class="isFaceTrackingLoading ? 'fas fa-spinner fa-spin' : (isFaceTrackingEnabled ? 'fas fa-eye-slash' : 'fas fa-eye')"></i>
-                      {{ isFaceTrackingEnabled ? 'Désactiver' : 'Activer' }}
-                    </button>
-                  </div>
-                  <button @click="faceTrackingExpanded = !faceTrackingExpanded" class="btn-text">
-                    <i :class="faceTrackingExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
-                    {{ faceTrackingExpanded ? 'Masquer' : 'Afficher' }} les paramètres
-                  </button>
-                </div>
-                
                 <!-- Intégration du composant FaceTrackingControl -->
-                <FaceTrackingControl v-if="faceTrackingExpanded" />
+                <FaceTrackingControl/>
               </div>
               <div class="mode-not-available" v-if="!isDroneConnected">
                 <p>Connectez-vous à un drone pour utiliser la vision et le suivi.</p>
@@ -413,7 +392,7 @@ export default {
   },
   data() {
     return {
-      isConnected: false,
+      isConnected: true,
       videoUrl: `${API_URL}/video/feed`,
       videoRefreshKey: 0,
       droneData: {
@@ -487,7 +466,7 @@ export default {
       
       // Gesture control
       isGestureEnabled: false,
-      isDroneConnected: false,
+      isDroneConnected: true,
       isGestureLoading: false,
       gestureStatus: null,
       statusInterval: null,
@@ -533,9 +512,6 @@ export default {
     voiceEnabled(newVal) {
       if (newVal) {
         this.checkSpeechRecognitionSupport();
-        if (this.recognitionEnabled) {
-          this.startSpeechRecognition();
-        }
       } else if (this.isListening) {
         this.stopSpeechRecognition();
       }
@@ -605,8 +581,10 @@ export default {
     async checkDroneStatus() {
       try {
         const response = await axios.get(`${API_URL}/status`);
-        this.isConnected = response.data.connected;
-        this.isDroneConnected = response.data.connected;
+        // this.isConnected = response.data.connected;
+        this.isConnected = true;
+        // this.isDroneConnected = response.data.connected;
+        this.isDroneConnected = true;
         
         if (this.isConnected) {
           this.droneData = response.data.drone_data;
@@ -617,8 +595,10 @@ export default {
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de l'état du drone:", error);
-        this.isConnected = false;
-        this.isDroneConnected = false;
+        // this.isConnected = false;
+        this.isConnected = true;
+        // this.isDroneConnected = false;
+        this.isDroneConnected = true;
         localStorage.removeItem('droneConnected');
       }
     },
@@ -639,11 +619,7 @@ export default {
     },
     
     handleVoiceToggle() {
-      if (this.voiceEnabled) {
-        if (!this.isListening) {
-          this.startSpeechRecognition();
-        }
-      } else if (this.isListening) {
+      if (!this.voiceEnabled && this.isListening) {
         this.stopSpeechRecognition();
       }
     },
@@ -2019,26 +1995,6 @@ export default {
   color: white;
 }
 
-.slider {
-  width: 100%;
-  height: 8px;
-  -webkit-appearance: none;
-  background: var(--light-gray);
-  outline: none;
-  border-radius: 4px;
-  margin: 1rem 0 0.5rem 0;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  cursor: pointer;
-}
-
 .range-labels {
   display: flex;
   justify-content: space-between;
@@ -2369,8 +2325,8 @@ export default {
 .switch {
   position: relative;
   display: inline-block;
-  width: 46px;
-  height: 24px;
+  width: 52px;
+  height: 26px;
 }
 
 .switch input {
@@ -2387,18 +2343,20 @@ export default {
   right: 0;
   bottom: 0;
   background-color: var(--medium-gray);
-  transition: .4s;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 20px;
+  width: 20px;
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 input:checked + .slider {
@@ -2406,24 +2364,66 @@ input:checked + .slider {
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px var(--primary-color);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 input:checked + .slider:before {
-  transform: translateX(22px);
+  transform: translateX(26px);
 }
 
+input:checked + .slider:before {
+  animation: switch-on 0.3s ease-out;
+}
+
+
 input:disabled + .slider {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  background-color: var(--light-gray);
+}
+
+input:disabled + .slider:before {
+  background-color: #e0e0e0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes switch-on {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(28px);
+  }
+  100% {
+    transform: translateX(26px);
+  }
 }
 
 .slider.round {
-  border-radius: 24px;
+  border-radius: 34px;
 }
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.switch:hover .slider:before {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.switch:hover input:checked + .slider {
+  background-color: #2980b9; /* Version légèrement plus foncée du primary-color */
+}
+
+.switch:hover input:disabled + .slider {
+  /* Pas de changement sur le hover lorsque désactivé */
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibilité - focus visible */
+.switch input:focus-visible + .slider {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 /* Key grid simplifié */
