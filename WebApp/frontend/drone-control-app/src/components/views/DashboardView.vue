@@ -200,12 +200,12 @@
                       <span class="key-label">Atterrissage</span>
                     </div>
                     <div class="key-item">
-                      <span class="key">Space</span>
-                      <span class="key-label">Vol stationnaire</span>
-                    </div>
-                    <div class="key-item">
                       <span class="key">P</span>
                       <span class="key-label">Arrêt d'urgence</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key key-space">Space</span>
+                      <span class="key-label">Vol stationnaire</span>
                     </div>
                   </div>
                 </div>
@@ -1633,38 +1633,48 @@ export default {
 .key-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin: 1.5rem 0;
+  gap: 1rem;
 }
 
 .key-group {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .key-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .key {
-  width: 36px;
-  height: 36px;
+  width: 40px;  /* Taille standard pour la plupart des touches */
+  height: 40px;
   background-color: white;
   border: 1px solid var(--medium-gray);
-  border-radius: var(--border-radius-sm);
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 500;
   box-shadow: 0 2px 0 var(--medium-gray);
+  font-size: 0.9rem;
 }
 
 .key-label {
   font-size: 0.9rem;
   color: var(--text-color);
+}
+
+.key-item:has(.key:contains("Space")) .key {
+  width: 80px;  /* Élargir la touche espace */
+  font-size: 0.85rem;  /* Réduire légèrement la taille de police */
+}
+
+/* Pour les navigateurs qui ne supportent pas :has ou :contains */
+.key-space {
+  width: 80px !important;
 }
 
 .keyboard-toggle {
@@ -2010,19 +2020,20 @@ export default {
 
 .btn-outline {
   padding: 0.6rem 1rem;
-  border: 1px solid var(--medium-gray);
-  background-color: white;
-  color: var(--text-color);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  background-color: transparent;
   border-radius: var(--border-radius-sm);
   transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  text-decoration: none;
 }
 
 .btn-outline:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .btn-outline.active {
@@ -2355,6 +2366,7 @@ export default {
 .mode-actions {
   display: flex;
   justify-content: center;
+  margin-top: 1.5rem;
 }
 
 /* Switch toggle */

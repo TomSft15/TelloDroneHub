@@ -214,8 +214,6 @@
           'g': 'flipBackward',            // Back flip
           'f': 'flipLeft',                // Left flip
           'h': 'flipRight',               // Right flip
-          'i': 'speechRecognition',       // Speech recognition
-          'm': 'quit'                     // Quitter le programme
         },
         defaultBindings: {},
         isRebinding: false,
