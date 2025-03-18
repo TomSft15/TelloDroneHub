@@ -7,6 +7,9 @@
       </p>
     </div>
     
+    <!-- Section de suivi facial - Nouveau composant -->
+    <FaceTrackingControl />
+    
     <!-- Section de reconnaissance faciale -->
     <div class="control-card">
       <div class="card-header">
@@ -116,11 +119,13 @@
 
 <script>
 import ControlMode from '../ControlMode.vue';
+import FaceTrackingControl from '../FaceTrackingControl.vue';
 
 export default {
   name: 'VisionControlView',
   components: {
-    ControlMode
+    ControlMode,
+    FaceTrackingControl
   },
   data() {
     return {
