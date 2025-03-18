@@ -9,10 +9,10 @@
         </p>
         <div class="hero-actions">
           <router-link to="/dashboard" class="btn btn-primary">
-            <font-awesome-icon icon="rocket"/> Démarrer
+            <font-awesome-icon icon="rocket" class="right-margin"/> Démarrer
           </router-link>
           <router-link to="/connect" class="btn btn-outline">
-            <font-awesome-icon icon="plug"/> Connecter un drone
+            <font-awesome-icon icon="plug" class="right-margin"/> Connecter un drone
           </router-link>
         </div>
       </div>
@@ -74,14 +74,14 @@
           Notre tableau de bord tout-en-un vous permet de basculer facilement entre différents modes de contrôle tout en visualisant les données de vol en temps réel.
         </p>
         <ul class="interface-features">
-          <li><font-awesome-icon icon="check-circle"/> Flux vidéo en direct</li>
-          <li><font-awesome-icon icon="check-circle"/> Statistiques détaillées du drone</li>
-          <li><font-awesome-icon icon="check-circle"/> Capture de photos et vidéos</li>
-          <li><font-awesome-icon icon="check-circle"/> Configuration personnalisable</li>
-          <li><font-awesome-icon icon="check-circle"/> Modes de contrôle interchangeables</li>
+          <li><font-awesome-icon icon="check-circle" class="right-margin"/> Flux vidéo en direct</li>
+          <li><font-awesome-icon icon="check-circle" class="right-margin"/> Statistiques détaillées du drone</li>
+          <li><font-awesome-icon icon="check-circle" class="right-margin"/> Capture de photos et vidéos</li>
+          <li><font-awesome-icon icon="check-circle" class="right-margin"/> Configuration personnalisable</li>
+          <li><font-awesome-icon icon="check-circle" class="right-margin"/> Modes de contrôle interchangeables</li>
         </ul>
         <router-link to="/dashboard" class="btn btn-primary">
-          <font-awesome-icon icon="desktop"/> Explorer l'interface
+          <font-awesome-icon icon="desktop" class="right-margin"/> Explorer l'interface
         </router-link>
       </div>
       <div class="interface-preview">
@@ -659,5 +659,9 @@ export default {
   .feature-card {
     padding: 1.5rem;
   }
+}
+
+.right-margin {
+  margin-right: 10px;
 }
 </style>

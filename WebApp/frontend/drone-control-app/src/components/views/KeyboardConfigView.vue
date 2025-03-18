@@ -1,13 +1,13 @@
 <template>
     <div class="config-container">
       <div class="page-header">
-        <h1><i class="fas fa-keyboard"></i> Configuration des contrôles clavier</h1>
+        <h1><font-awesome-icon icon="keyboard"/> Configuration des contrôles clavier</h1>
         <div class="header-actions">
           <button class="btn-save" @click="saveConfiguration">
-            <i class="fas fa-save"></i> Enregistrer la configuration
+            <font-awesome-icon icon="save"/> Enregistrer la configuration
           </button>
           <button class="btn-reset" @click="resetConfiguration">
-            <i class="fas fa-undo"></i> Réinitialiser
+            <font-awesome-icon icon="undo"/> Réinitialiser
           </button>
         </div>
       </div>
@@ -117,7 +117,7 @@
         <div class="card-header">
           <h2>Commandes actuelles</h2>
           <button class="btn-outline" @click="exportConfiguration">
-            <i class="fas fa-file-export"></i> Exporter
+            <font-awesome-icon icon="file-export"/> Exporter
           </button>
         </div>
         <div class="card-content">
@@ -144,7 +144,7 @@
               <tr v-for="(action, key) in filteredBindings" :key="key">
                 <td>
                   <div class="action-info">
-                    <i class="action-icon" :class="getActionIcon(action)"></i>
+                    <font-awesome-icon :icon="getActionIcon(action)"/>
                     <span class="action-name">{{ displayActionName(action) }}</span>
                   </div>
                 </td>
@@ -158,7 +158,7 @@
                 </td>
                 <td class="actions-cell">
                   <button class="btn-edit" @click="startRebinding(key)">
-                    <i class="fas fa-pencil-alt"></i> Modifier
+                    <font-awesome-icon icon="pencil-alt"/> Modifier
                   </button>
                 </td>
               </tr>
@@ -172,7 +172,7 @@
           <div class="modal-header">
             <h3>Modifier la touche</h3>
             <button @click="cancelRebinding" class="btn-close">
-              <i class="fas fa-times"></i>
+              <font-awesome-icon icon="times"/>
             </button>
           </div>
           <div class="modal-body">
@@ -182,7 +182,7 @@
             </div>
             <div class="rebind-key-prompt">
               <div class="key-icon">
-                <i class="fas fa-keyboard"></i>
+                <font-awesome-icon icon="keyboard"/>
               </div>
               <p>Appuyez sur une touche pour l'assigner à cette action</p>
               <p class="rebind-hint">(Appuyez sur Échap pour annuler)</p>
@@ -271,10 +271,10 @@
           'quit': 'system'
         },
         actionIcons: {
-          'moveUp': 'fas fa-arrow-up',
-          'moveDown': 'fas fa-arrow-down',
-          'moveLeft': 'fas fa-arrow-left',
-          'moveRight': 'fas fa-arrow-right',
+          'moveUp': 'arrow-up',
+          'moveDown': 'arrow-down',
+          'moveLeft': 'arrow-left',
+          'moveRight': 'arrow-right',
           'moveForward': 'fas fa-arrow-circle-up',
           'moveBackward': 'fas fa-arrow-circle-down',
           'rotateLeft': 'fas fa-undo',
@@ -341,7 +341,7 @@
         return this.actionCategories[action] || 'other';
       },
       getActionIcon(action) {
-        return this.actionIcons[action] || 'fas fa-question-circle';
+        return this.actionIcons[action] || 'question-circle';
       },
       isKeyAssigned(key) {
         return Object.keys(this.keyBindings).includes(key);
@@ -631,18 +631,6 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-  }
-  
-  .action-icon {
-    width: 24px;
-    height: 24px;
-    background-color: var(--light-gray);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-color);
-    font-size: 0.8rem;
   }
   
   .action-name {

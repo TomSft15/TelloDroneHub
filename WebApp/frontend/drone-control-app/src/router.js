@@ -11,11 +11,6 @@ const routes = [
   { path: '/keyboard-config', component: KeyboardConfigView },
   { path: '/connect', component: DroneConnection },
   { path: '/drone-camera', component: DroneCamera },
-  
-  // Rediriger les anciennes routes vers le dashboard
-  { path: '/voice-control', redirect: '/dashboard' },
-  { path: '/gesture-control', redirect: '/dashboard' },
-  { path: '/vision-control', redirect: '/dashboard' },
 ];
 
 const router = createRouter({

@@ -238,7 +238,7 @@
                 </div>
                 <div class="mode-actions">
                   <router-link to="/keyboard-config" class="btn-outline">
-                    <i class="fas fa-cog"></i> Configurer
+                    <font-awesome-icon icon="cog"/> Configurer
                   </router-link>
                 </div>
               </div>
@@ -310,7 +310,7 @@
                     :disabled="!isDroneConnected || isGestureLoading"
                     :class="{ 'btn-active': isGestureEnabled, 'btn-inactive': !isGestureEnabled }"
                     class="btn-medium">
-                    <i :class="isGestureLoading ? 'fas fa-spinner fa-spin' : (isGestureEnabled ? 'fas fa-hand-paper' : 'fas fa-play')"></i>
+                    <font-awesome-icon :icon="isGestureLoading ? 'spinner' : (isGestureEnabled ? 'hand-paper' : 'play')"/>
                     {{ isGestureEnabled ? 'Désactiver' : 'Activer' }}
                   </button>
                 </div>
@@ -323,19 +323,19 @@
                   </div>
                   <div class="gesture-item">
                     <div class="gesture-image">
-                      <i class="fas fa-fist-raised"></i>
+                      <font-awesome-icon icon="fist-raised"/>
                     </div>
                     <p>Atterrissage</p>
                   </div>
                   <div class="gesture-item">
                     <div class="gesture-image">
-                      <i class="fas fa-thumbs-up"></i>
+                      <font-awesome-icon icon="thumbs-up"/>
                     </div>
                     <p>Monter</p>
                   </div>
                   <div class="gesture-item">
                     <div class="gesture-image">
-                      <i class="fas fa-thumbs-down"></i>
+                      <font-awesome-icon icon="thumbs-down"/>
                     </div>
                     <p>Descendre</p>
                   </div>
@@ -379,25 +379,25 @@
         </div>
         <div class="controls-grid">
           <button @click="sendCommand('takeoff')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-up"></i> Décollage
+            <font-awesome-icon icon="arrow-up"/> Décollage
           </button>
           <button @click="sendCommand('land')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-down"></i> Atterrissage
+            <font-awesome-icon icon="arrow-down"/> Atterrissage
           </button>
           <button @click="sendCommand('move/forward/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-up"></i> Avancer
+            <font-awesome-icon icon="arrow-circle-up"/> Avancer
           </button>
           <button @click="sendCommand('move/back/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-down"></i> Reculer
+            <font-awesome-icon icon="arrow-circle-down"/> Reculer
           </button>
           <button @click="sendCommand('move/left/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-left"></i> Gauche
+            <font-awesome-icon icon="arrow-circle-left"/> Gauche
           </button>
           <button @click="sendCommand('move/right/30')" :disabled="!isConnected" class="control-btn">
-            <i class="fas fa-arrow-circle-right"></i> Droite
+            <font-awesome-icon icon="arrow-circle-right"/> Droite
           </button>
           <button @click="sendCommand('emergency')" :disabled="!isConnected" class="control-btn emergency">
-            <i class="fas fa-exclamation-triangle"></i> Arrêt d'urgence
+            <font-awesome-icon icon="exclamation-triangle"/> Arrêt d'urgence
           </button>
         </div>
       </div>

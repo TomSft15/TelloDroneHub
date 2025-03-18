@@ -1,14 +1,14 @@
 <template>
     <div class="connection-page">
       <div class="page-header">
-        <h1><i class="fas fa-wifi"></i> Connexion au Drone</h1>
+        <h1><font-awesome-icon icon="wifi" class="icon-margin"/> Connexion au Drone</h1>
         <p class="page-description">Connectez-vous à votre drone Tello via WiFi pour commencer à voler.</p>
       </div>
   
       <div class="connection-container">
         <div class="connection-card">
           <div class="card-header">
-            <h2><i class="fas fa-plug"></i> État de la connexion</h2>
+            <h2><font-awesome-icon icon="plug" class="icon-margin"/> État de la connexion</h2>
             <div class="connection-status" :class="{ 'connected': isConnected, 'disconnected': !isConnected }">
               <span class="status-indicator"></span>
               <span class="status-text">{{ connectionStatus }}</span>
@@ -22,11 +22,11 @@
                 <h3>Connectez-vous au réseau WiFi du drone</h3>
                 <p>Activez votre drone Tello et connectez-vous au réseau WiFi "TELLO-XXXXXX" depuis les paramètres WiFi de votre appareil.</p>
                 <div class="info-box">
-                  <i class="fas fa-info-circle"></i>
+                  <font-awesome-icon icon="info-circle" class="icon-margin"/>
                   <p>Le mot de passe par défaut est vide. Le SSID du réseau commence généralement par "TELLO-" suivi du numéro de série.</p>
                 </div>
                 <button @click="checkWifiConnection" class="btn-primary">
-                  <i class="fas fa-sync-alt" :class="{ 'fa-spin': checkingWifi }"></i> 
+                  <font-awesome-icon icon="sync-alt" :icon="{ 'spinner': checkingWifi }" class="icon-margin"/>
                   Vérifier la connexion WiFi
                 </button>
               </div>
@@ -66,7 +66,7 @@
                   class="btn-primary" 
                   :disabled="!wifiConnected || connecting || isConnected"
                 >
-                  <i class="fas fa-link" :class="{ 'fa-spin': connecting }"></i> 
+                  <font-awesome-icon class='icon-margin' icon="link" :icon="{ 'spin': connecting }"/>
                   {{ isConnected ? 'Connecté' : connecting ? 'Connexion en cours...' : 'Connecter au drone' }}
                 </button>
                 
@@ -75,7 +75,7 @@
                   @click="disconnectDrone" 
                   class="btn-outline btn-danger"
                 >
-                  <i class="fas fa-unlink"></i> Déconnecter
+                  <font-awesome-icon icon="unlink" class="icon-margin"/> Déconnecter
                 </button>
               </div>
             </div>
@@ -110,10 +110,10 @@
                 
                 <div class="action-buttons" v-if="isConnected">
                   <router-link to="/dashboard" class="btn-primary">
-                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    <font-awesome-icon icon="tachometer-alt" class="icon-margin"/> Tableau de bord
                   </router-link>
                   <router-link to="/voice-control" class="btn-outline">
-                    <i class="fas fa-microphone"></i> Contrôle vocal
+                    <font-awesome-icon icon="microphone" class="icon-margin"/> Contrôle vocal
                   </router-link>
                 </div>
               </div>
@@ -124,7 +124,7 @@
         <div class="connection-help">
           <div class="help-card">
             <div class="card-header">
-              <h3><i class="fas fa-question-circle"></i> Aide à la connexion</h3>
+              <h3><font-awesome-icon icon="question-circle" class="icon-margin"/> Aide à la connexion</h3>
             </div>
             <div class="help-content">
               <div class="help-item">
@@ -145,7 +145,7 @@
               </div>
               <div class="troubleshoot-button">
                 <button class="btn-text" @click="showAdvancedTroubleshooting = !showAdvancedTroubleshooting">
-                  <i class="fas fa-tools"></i> 
+                  <font-awesome-icon icon="tools" class="icon-margin"/>
                   {{ showAdvancedTroubleshooting ? 'Masquer' : 'Afficher' }} le dépannage avancé
                 </button>
               </div>
@@ -158,7 +158,7 @@
                   </div>
                   <p>Cette commande vérifie si vous pouvez atteindre le drone</p>
                   <button class="btn-small" @click="runNetworkDiagnostic">
-                    <i class="fas fa-stethoscope"></i> Exécuter diagnostic réseau
+                    <font-awesome-icon class="icon-margin" icon="stethoscope"/> Exécuter diagnostic réseau
                   </button>
                 </div>
               </div>
@@ -622,6 +622,10 @@
     background-color: #e9ecef;
     cursor: not-allowed;
   }
+
+  .icon-margin {
+    margin-right: 12px;
+  }
   
   /* Buttons */
   .btn-primary {
@@ -830,7 +834,7 @@
   }
   
   /* Animation for spinner */
-  @keyframes fa-spin {
+  @keyframes spinner {
     0% {
       transform: rotate(0deg);
     }
@@ -839,7 +843,7 @@
     }
   }
   
-  .fa-spin {
+  .spinner {
     animation: fa-spin 2s linear infinite;
   }
   </style>
