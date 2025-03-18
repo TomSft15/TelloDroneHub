@@ -59,6 +59,6 @@ class GestureCooldown(Resource):
     @gesture_ns.response(200, 'Succès', response_model)
     def post(self):
         """Définir le temps de refroidissement entre les gestes"""
-        seconds = gesture_ns.payload.get('seconds', 3.0)
+        seconds = gesture_ns.payload.get('seconds', 2.0)
         success, message = gesture_service.set_cooldown(seconds)
         return {"success": success, "message": message}
