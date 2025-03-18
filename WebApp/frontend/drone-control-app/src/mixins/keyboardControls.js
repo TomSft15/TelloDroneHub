@@ -56,7 +56,7 @@ export default {
       
       const key = event.key;
       const command = this.keyCommands[key];
-      
+
       if (command) {
         // Enregistrer la touche comme étant enfoncée
         this.pressedKeys[key] = true;
@@ -159,7 +159,7 @@ export default {
       
       // Si vous avez une API qui gère cela, utilisez-la
       // Par exemple:
-      // DroneService.hover();
+      DroneService.hover();
     },
     // La méthode suivante permet de régler le délai entre les commandes
     setCommandCooldown(milliseconds) {
