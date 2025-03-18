@@ -59,6 +59,8 @@ Thumbs.db
 
 # Drone specific
 photos/
+photos_traitees/
+pictures/
 videos/
 *.jpg
 *.png
