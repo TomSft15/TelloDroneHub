@@ -233,6 +233,7 @@
           'rotateRight': 'Tourner à droite',
           'takeoff': 'Décoller',
           'land': 'Atterrir',
+          'hover': 'Maintenir la position',
           'emergencyStop': 'Arrêt d\'urgence',
           'flipForward': 'Looping avant',
           'flipBackward': 'Looping arrière',
@@ -264,6 +265,7 @@
           'flipBackward': 'movement',
           'flipLeft': 'movement',
           'flipRight': 'movement',
+          'hover': 'movement',
           'emergencyStop': 'emergency',
           'speechRecognition': 'control',
           'quit': 'system'
@@ -279,6 +281,7 @@
           'rotateRight': 'fas fa-redo',
           'takeoff': 'fas fa-rocket',
           'land': 'fas fa-plane-arrival',
+          'hover': 'fas fa-crosshairs',
           'emergencyStop': 'fas fa-stop-circle',
           'flipForward': 'fas fa-sync-alt',
           'flipBackward': 'fas fa-sync-alt',
