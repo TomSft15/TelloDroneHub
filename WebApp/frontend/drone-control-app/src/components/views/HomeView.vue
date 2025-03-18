@@ -9,10 +9,10 @@
         </p>
         <div class="hero-actions">
           <router-link to="/dashboard" class="btn btn-primary">
-            <i class="fas fa-rocket"></i> Démarrer
+            <font-awesome-icon icon="rocket"/> Démarrer
           </router-link>
           <router-link to="/connect" class="btn btn-outline">
-            <i class="fas fa-plug"></i> Connecter un drone
+            <font-awesome-icon icon="plug"/> Connecter un drone
           </router-link>
         </div>
       </div>
@@ -34,7 +34,7 @@
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">
-            <i class="fas fa-tachometer-alt"></i>
+            <font-awesome-icon icon="tachometer-alt"/>
           </div>
           <h3>Tableau de bord unifié</h3>
           <p>Toutes les commandes et données en temps réel regroupées dans une interface intuitive</p>
@@ -42,7 +42,7 @@
         
         <div class="feature-card">
           <div class="feature-icon">
-            <i class="fas fa-hand-paper"></i>
+            <font-awesome-icon icon="hand-paper"/>
           </div>
           <h3>Contrôle gestuel</h3>
           <p>Pilotez votre drone avec des mouvements de main naturels capturés par votre caméra</p>
@@ -50,7 +50,7 @@
         
         <div class="feature-card">
           <div class="feature-icon">
-            <i class="fas fa-microphone"></i>
+            <font-awesome-icon icon="microphone"/>
           </div>
           <h3>Commandes vocales</h3>
           <p>Donnez des instructions à votre drone en utilisant simplement votre voix</p>
@@ -58,7 +58,7 @@
         
         <div class="feature-card">
           <div class="feature-icon">
-            <i class="fas fa-eye"></i>
+            <font-awesome-icon icon="eye"/>
           </div>
           <h3>Suivi facial</h3>
           <p>Votre drone détecte et suit automatiquement des visages pour des prises de vue parfaites</p>
@@ -74,14 +74,14 @@
           Notre tableau de bord tout-en-un vous permet de basculer facilement entre différents modes de contrôle tout en visualisant les données de vol en temps réel.
         </p>
         <ul class="interface-features">
-          <li><i class="fas fa-check-circle"></i> Flux vidéo en direct</li>
-          <li><i class="fas fa-check-circle"></i> Statistiques détaillées du drone</li>
-          <li><i class="fas fa-check-circle"></i> Capture de photos et vidéos</li>
-          <li><i class="fas fa-check-circle"></i> Configuration personnalisable</li>
-          <li><i class="fas fa-check-circle"></i> Modes de contrôle interchangeables</li>
+          <li><font-awesome-icon icon="check-circle"/> Flux vidéo en direct</li>
+          <li><font-awesome-icon icon="check-circle"/> Statistiques détaillées du drone</li>
+          <li><font-awesome-icon icon="check-circle"/> Capture de photos et vidéos</li>
+          <li><font-awesome-icon icon="check-circle"/> Configuration personnalisable</li>
+          <li><font-awesome-icon icon="check-circle"/> Modes de contrôle interchangeables</li>
         </ul>
         <router-link to="/dashboard" class="btn btn-primary">
-          <i class="fas fa-desktop"></i> Explorer l'interface
+          <font-awesome-icon icon="desktop"/> Explorer l'interface
         </router-link>
       </div>
       <div class="interface-preview">
@@ -105,7 +105,7 @@
           <h3>Connectez votre drone</h3>
           <p>Établissez une connexion avec votre drone Tello via WiFi</p>
           <router-link to="/connect" class="step-link">
-            Guide de connexion <i class="fas fa-arrow-right"></i>
+            Guide de connexion<font-awesome-icon icon="arrow-right"/>
           </router-link>
         </div>
         
@@ -114,7 +114,7 @@
           <h3>Accédez au tableau de bord</h3>
           <p>Visualisez le flux vidéo et les données de vol en temps réel</p>
           <router-link to="/dashboard" class="step-link">
-            Tableau de bord <i class="fas fa-arrow-right"></i>
+            Tableau de bord<font-awesome-icon icon="arrow-right"/>
           </router-link>
         </div>
         
@@ -123,7 +123,7 @@
           <h3>Choisissez votre mode de contrôle</h3>
           <p>Basculez entre contrôle manuel, gestuel, vocal ou suivi automatique</p>
           <router-link to="/dashboard" class="step-link">
-            Modes de contrôle <i class="fas fa-arrow-right"></i>
+            Modes de contrôle<font-awesome-icon icon="arrow-right"/>
           </router-link>
         </div>
       </div>
@@ -355,7 +355,7 @@ export default {
 .feature-icon {
   width: 80px;
   height: 80px;
-  background-color: #ebf4f5;
+  background-color: #ebf4f5cb;
   border-radius: 50%;
   display: flex;
   align-items: center;

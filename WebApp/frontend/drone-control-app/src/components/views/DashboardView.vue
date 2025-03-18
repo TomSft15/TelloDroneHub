@@ -1,7 +1,35 @@
 <template>
   <div class="dashboard-container">
+    <div v-if="showAllPhotosModal" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Toutes les photos</h3>
+          <button class="modal-close" @click="showAllPhotosModal = false">
+            <font-awesome-icon icon="times"/>
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="photos-gallery">
+            <div v-for="(image, index) in capturedImages" :key="index" class="gallery-item">
+              <img :src="image.src" :alt="image.name">
+              <div class="gallery-item-info">
+                <p class="gallery-item-name">{{ image.name }}</p>
+                <div class="gallery-item-actions">
+                  <button class="btn-icon" @click="downloadPhoto(image)">
+                    <font-awesome-icon icon="download"/>
+                  </button>
+                  <button class="btn-icon" @click="deletePhoto(index)">
+                    <font-awesome-icon icon="trash"/>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="dashboard-header">
-      <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord du drone</h1>
+      <h1><font-awesome-icon icon="tachometer-alt"/> Tableau de bord du drone</h1>
       <div class="connection-status" :class="{ connected: isConnected }">
         <span class="status-indicator"></span>
         <span class="status-text">{{ isConnected ? 'Connecté' : 'Déconnecté' }}</span>
@@ -17,34 +45,39 @@
         <div class="card-header">
           <h2>Flux vidéo en direct</h2>
           <div class="controls">
-            <button class="btn-icon" @click="toggleFullscreen"><i class="fas fa-expand-alt"></i></button>
-            <button class="btn-icon" @click="takePhoto"><i class="fas fa-camera"></i></button>
+            <button class="btn-icon" @click="toggleFullscreen">
+              <font-awesome-icon icon="expand" />
+            </button>
+            <button class="btn-icon" @click="takePhoto">
+              <font-awesome-icon icon="camera" />
+            </button>
           </div>
         </div>
         <div class="camera-content" ref="videoContainer">
           <img v-if="isConnected" :src="videoUrl" alt="Live feed" @error="handleVideoError">
           <div v-else class="empty-camera">
-            <i class="fas fa-video-slash"></i>
+            <font-awesome-icon icon="video-slash"/>
             <p>Flux vidéo non disponible</p>
             <button v-if="!isConnected" @click="connectDrone" class="connect-btn">
-              <i class="fas fa-plug"></i> Connecter au drone
+              <font-awesome-icon icon="plug"/> Connecter au drone
             </button>
             <button v-else @click="refreshVideo" class="refresh-btn">
-              <i class="fas fa-sync-alt"></i> Rafraîchir le flux
+              <font-awesome-icon icon="sync-alt"/> Rafraîchir le flux
             </button>
           </div>
           <div class="camera-overlay">
             <div class="overlay-item altitude">{{ droneData.height }}m</div>
             <div class="overlay-item speed">{{ droneData.speed }}m/s</div>
             <div v-if="isRecording" class="overlay-item recording">
-              <i class="fas fa-circle text-danger"></i> REC {{ recordingTime }}
+              <font-awesome-icon icon="circle" class="text-danger"/> REC {{ recordingTime }}
             </div>
             <div class="overlay-item battery">
-              <i class="fas fa-battery-half"></i> {{ droneData.battery }}%
+              <font-awesome-icon icon="battery-half"/> {{ droneData.temperature }}%
             </div>
           </div>
         </div>
       </div>
+
 
       <!-- Section Statistiques de Vol -->
       <div class="flight-stats grid-item">
@@ -53,22 +86,22 @@
         </div>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-signal"></i></div>
+            <div class="stat-icon"><font-awesome-icon icon="signal"/></div>
             <div class="stat-value">{{ droneData.signal }}%</div>
             <div class="stat-label">Signal</div>
           </div>
           <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-battery-three-quarters"></i></div>
+            <div class="stat-icon"><font-awesome-icon icon="battery-three-quarters"/></div>
             <div class="stat-value">{{ droneData.battery }}%</div>
             <div class="stat-label">Batterie</div>
           </div>
           <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-temperature-high"></i></div>
+            <div class="stat-icon"><font-awesome-icon icon="temperature-high"/></div>
             <div class="stat-value">{{ droneData.temperature }}°C</div>
             <div class="stat-label">Température</div>
           </div>
           <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-icon"><font-awesome-icon icon="clock"/></div>
             <div class="stat-value">{{ formatTime(droneData.flight_time) }}</div>
             <div class="stat-label">Temps de vol</div>
           </div>
@@ -97,12 +130,6 @@
             <div class="data-label">Durée de vol</div>
             <div class="data-value">{{ formatTime(droneData.flight_time) }}</div>
           </div>
-          <div class="data-row">
-            <div class="data-label">Mode de vol</div>
-            <div class="data-value">
-              <span class="mode-badge">{{ currentControlMode }}</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -110,7 +137,7 @@
       <div class="recent-photos grid-item">
         <div class="card-header">
           <h2>Photos récentes</h2>
-          <button class="btn-text">Voir toutes <i class="fas fa-chevron-right"></i></button>
+          <button class="btn-text" @click="viewAllPhotos">Voir toutes <font-awesome-icon icon="chevron-right"/></button>
         </div>
         <div class="photo-grid">
           <div v-for="(image, index) in capturedImages.slice(0, 4)" :key="index" class="photo-item">
@@ -118,7 +145,7 @@
           </div>
           <!-- Éléments de remplissage si moins de 4 images -->
           <div v-for="index in Math.max(0, 4 - capturedImages.length)" :key="`empty-${index}`" class="photo-item empty-photo">
-            <i class="fas fa-image"></i>
+            <font-awesome-icon icon="image"/>
           </div>
         </div>
       </div>
@@ -129,10 +156,10 @@
           <h2>Modes de contrôle</h2>
           <div class="header-actions">
             <button class="btn-text" @click="toggleAllModes(true)" :disabled="isAllModesEnabled">
-              <i class="fas fa-check-double"></i> Tout activer
+              <font-awesome-icon icon="check-double"/> Tout activer
             </button>
             <button class="btn-text" @click="toggleAllModes(false)" :disabled="isNoModeEnabled">
-              <i class="fas fa-times"></i> Tout désactiver
+              <font-awesome-icon icon="times"/> Tout désactiver
             </button>
           </div>
         </div>
@@ -142,7 +169,7 @@
             <div class="mode-card" :class="{ 'mode-active': keyboardEnabled }">
               <div class="mode-header">
                 <div class="mode-title">
-                  <i class="fas fa-keyboard"></i>
+                  <font-awesome-icon icon="keyboard"/>
                   <h3>Contrôle par clavier</h3>
                 </div>
                 <div class="mode-toggle">
@@ -221,7 +248,7 @@
             <div class="mode-card" :class="{ 'mode-active': voiceEnabled }">
               <div class="mode-header">
                 <div class="mode-title">
-                  <i class="fas fa-microphone"></i>
+                  <font-awesome-icon icon="microphone"/>
                   <h3>Contrôle vocal</h3>
                 </div>
                 <div class="mode-toggle">
@@ -234,7 +261,7 @@
               <div class="mode-content" v-if="voiceEnabled">
                 <div class="voice-status">
                   <div class="status-indicator" :class="{ 'is-active': isListening }">
-                    <i class="fas" :class="isListening ? 'fa-microphone' : 'fa-microphone-slash'"></i>
+                    <font-awesome-icon :icon="isListening ? 'microphone': 'microphone-slash'"/>
                     <span>{{ isListening ? 'Écoute active' : 'Écoute inactive' }}</span>
                   </div>
                   <div class="mic-visualizer">
@@ -245,7 +272,7 @@
                     </div>
                   </div>
                   <button @click="toggleSpeechRecognition" class="btn-speech" :class="{ 'btn-active': isListening, 'btn-inactive': !isListening }">
-                    <i :class="isListening ? 'fas fa-stop' : 'fas fa-microphone'"></i>
+                    <font-awesome-icon :icon="isListening ? 'stop': 'microphone'"/>
                     {{ isListening ? 'Arrêter' : 'Démarrer' }} l'écoute
                   </button>
                 </div>
@@ -262,7 +289,7 @@
             <div class="mode-card" :class="{ 'mode-active': gestureEnabled }">
               <div class="mode-header">
                 <div class="mode-title">
-                  <i class="fas fa-hand-paper"></i>
+                  <font-awesome-icon icon="hand-paper"/>
                   <h3>Contrôle gestuel</h3>
                 </div>
                 <div class="mode-toggle">
@@ -290,7 +317,7 @@
                 <div class="gestures-mini-grid">
                   <div class="gesture-item">
                     <div class="gesture-image">
-                      <i class="fas fa-hand-paper"></i>
+                      <font-awesome-icon icon="hand-paper"/>
                     </div>
                     <p>Décollage</p>
                   </div>
@@ -323,7 +350,7 @@
             <div class="mode-card" :class="{ 'mode-active': visionEnabled }">
               <div class="mode-header">
                 <div class="mode-title">
-                  <i class="fas fa-eye"></i>
+                  <font-awesome-icon icon="eye"/>
                   <h3>Vision et suivi</h3>
                 </div>
                 <div class="mode-toggle">
@@ -421,6 +448,7 @@ export default {
       isRecording: false,
       recordingTime: '00:00',
       recordingInterval: null,
+      showAllPhotosModal: false,
       recordingStartTime: 0,
       
       // Modes de contrôle
@@ -604,6 +632,11 @@ export default {
         localStorage.removeItem('droneConnected');
       }
     },
+
+    viewAllPhotos() {
+      this.showAllPhotosModal = true;
+    },
+
 
     toggleAllModes(enabled) {
       this.keyboardEnabled = enabled;
@@ -1048,6 +1081,24 @@ export default {
         console.error('Erreur lors de la récupération du statut de la reconnaissance:', error);
       }
     },
+
+    downloadPhoto(image) {
+      // Créer un lien temporaire pour le téléchargement
+      const link = document.createElement('a');
+      link.href = image.src;
+      link.download = image.name || 'drone_photo.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+
+    deletePhoto(index) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette photo?')) {
+        this.capturedImages.splice(index, 1);
+        // Mettre à jour le localStorage
+        localStorage.setItem('droneImages', JSON.stringify(this.capturedImages));
+      }
+    },
     
     startStatusPolling() {
       // Arrêter l'intervalle précédent si existant
@@ -1215,7 +1266,7 @@ export default {
 
 .connection-status .status-indicator {
   width: 10px;
-  height: 10px;
+  height: 24px;
   border-radius: 50%;
   background-color: #e74c3c;
 }
@@ -1358,7 +1409,7 @@ export default {
 
 .btn-icon {
   width: 32px;
-  height: 32px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -2586,5 +2637,100 @@ input:disabled + .slider:before {
   }
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: var(--light-gray);
+  border-bottom: 1px solid var(--medium-gray);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--text-color);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--dark-red);
+  cursor: pointer;
+}
+
+.modal-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.photos-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-item {
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.gallery-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-item-info {
+  padding: 0.75rem;
+  background-color: white;
+}
+
+.gallery-item-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-item-actions {
+  display: flex;
+  justify-content: space-between;
+}
 
 </style>
