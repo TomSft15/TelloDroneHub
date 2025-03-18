@@ -538,6 +538,8 @@ export default {
     
     // Charger la liste des personnes connues (pour la vision)
     this.loadPeople();
+
+    this.loadSavedImages();
     
     // Écouter les événements avec l'émetteur
     emitter.on('drone-connected', () => {
@@ -729,42 +731,109 @@ export default {
     },
     
     takePhoto() {
-      if (!this.isConnected) return;
+      if (!this.isConnected) {
+        console.error('Le drone n\'est pas connecté');
+        alert('Le drone n\'est pas connecté');
+        return;
+      }
       
-      // Capture l'image actuelle depuis le flux vidéo
-      const video = this.$refs.videoContainer.querySelector('img');
-      if (video) {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.naturalWidth || 640;
-        canvas.height = video.naturalHeight || 480;
+      try {
+        // Vérifier si le conteneur vidéo existe
+        if (!this.$refs.videoContainer) {
+          console.error("Référence 'videoContainer' non trouvée");
+          return;
+        }
         
+        // Obtenir l'élément img du flux vidéo
+        const video = this.$refs.videoContainer.querySelector('img');
+        if (!video) {
+          console.error("Élément vidéo non trouvé dans le conteneur");
+          return;
+        }
+        
+        // S'assurer que l'image est chargée
+        if (!video.complete || !video.naturalWidth) {
+          console.warn('Le flux vidéo n\'est pas encore prêt');
+          alert('Le flux vidéo n\'est pas encore prêt');
+          return;
+        }
+        
+        // Créer un canvas pour capturer l'image
+        const canvas = document.createElement('canvas');
+        const width = video.naturalWidth || 640;
+        const height = video.naturalHeight || 480;
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Dessiner l'image sur le canvas
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (!ctx) {
+          console.error("Impossible de créer le contexte 2D du canvas");
+          return;
+        }
+        
+        console.log(`Capture de l'image: ${width}x${height}`);
+        ctx.drawImage(video, 0, 0, width, height);
         
         // Convertir en base64
-        const imgData = canvas.toDataURL('image/jpeg');
-        
-        // Ajouter à notre collection d'images
-        this.capturedImages.unshift({
-          src: imgData,
-          name: `capture_${new Date().toISOString().replace(/:/g, '-')}.jpg`
-        });
-        
-        // Notification visuelle
-        this.$notify && this.$notify({
-          title: 'Photo capturée',
-          message: 'Image ajoutée à la galerie',
-          type: 'success'
-        });
-        
-        // Télécharger l'image
-        const link = document.createElement('a');
-        link.href = imgData;
-        link.download = `drone_capture_${new Date().toISOString().replace(/:/g, '-')}.jpg`;
-        link.click();
+        try {
+          const imgData = canvas.toDataURL('image/jpeg', 0.9);
+          
+          // Vérifier que les données d'image sont valides
+          if (!imgData || imgData === 'data:,') {
+            console.error("Données d'image invalides générées");
+            return;
+          }
+          
+          // Générer un nom unique pour l'image
+          const timestamp = new Date().toISOString().replace(/:/g, '-');
+          const imageName = `capture_${timestamp}.jpg`;
+          
+          // Ajouter à notre collection d'images
+          this.capturedImages.unshift({
+            src: imgData,
+            name: imageName
+          });
+          
+          // Sauvegarder les images dans le localStorage pour les conserver entre les sessions
+          localStorage.setItem('droneImages', JSON.stringify(this.capturedImages.slice(0, 20)));
+          
+          // Afficher une alerte simple de succès
+          console.log('Photo capturée avec succès');
+          
+          // Télécharger l'image
+          const link = document.createElement('a');
+          link.href = imgData;
+          link.download = `drone_${imageName}`;
+          document.body.appendChild(link); // Nécessaire pour Firefox
+          link.click();
+          document.body.removeChild(link); // Nettoyer
+          
+          return true;
+        } catch (e) {
+          console.error("Erreur lors de la conversion de l'image:", e);
+          return false;
+        }
+      } catch (error) {
+        console.error("Erreur lors de la capture de la photo:", error);
+        alert('Impossible de capturer la photo');
+        return false;
       }
     },
-    
+
+    loadSavedImages() {
+      try {
+        // Récupérer les images sauvegardées dans le localStorage
+        const savedImages = localStorage.getItem('droneImages');
+        if (savedImages) {
+          this.capturedImages = JSON.parse(savedImages);
+          console.log(`${this.capturedImages.length} images chargées du localStorage`);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des images sauvegardées:", error);
+      }
+    },
+
     toggleFullscreen() {
       const videoContainer = this.$refs.videoContainer;
       if (videoContainer) {
