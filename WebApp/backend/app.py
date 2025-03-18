@@ -5,7 +5,8 @@ from flask_restx import Api, Resource
 from controllers.drone_controller import drone_ns
 from controllers.video_controller import video_ns
 from controllers.status_controller import status_ns
-from controllers.gesture_controller import gesture_ns  # Nouveau contrôleur
+from controllers.gesture_controller import gesture_ns
+from controllers.face_tracking_controller import face_tracking_ns
 
 def create_app():
     app = Flask(__name__)
@@ -20,11 +21,12 @@ def create_app():
     api.add_namespace(drone_ns)
     api.add_namespace(video_ns)
     api.add_namespace(status_ns)
-    api.add_namespace(gesture_ns)  # Ajout du namespace de gestes
+    api.add_namespace(gesture_ns)
+    api.add_namespace(face_tracking_ns)  # Ajout du namespace de suivi facial
 
     # Test endpoint
     @api.route('/test')
-    class TestAPI(Resource):  # Au lieu de Api.Resource
+    class TestAPI(Resource):
         @api.doc(description='Test if API is accessible')
         def get(self):
             """Test if the API is accessible"""
