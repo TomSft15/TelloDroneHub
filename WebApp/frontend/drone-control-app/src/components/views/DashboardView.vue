@@ -127,308 +127,235 @@
       <div class="control-modes grid-item large">
         <div class="card-header">
           <h2>Modes de contrôle</h2>
-          <div class="mode-selector">
-            <button 
-              v-for="mode in controlModes" 
-              :key="mode.id" 
-              @click="switchControlMode(mode.id)"
-              :class="{ active: currentControlMode === mode.id }"
-              class="mode-btn">
-              <i :class="mode.icon"></i> {{ mode.name }}
+          <div class="header-actions">
+            <button class="btn-text" @click="toggleAllModes(true)" :disabled="isAllModesEnabled">
+              <i class="fas fa-check-double"></i> Tout activer
+            </button>
+            <button class="btn-text" @click="toggleAllModes(false)" :disabled="isNoModeEnabled">
+              <i class="fas fa-times"></i> Tout désactiver
             </button>
           </div>
         </div>
         <div class="control-content">
-          <!-- Mode contrôle clavier -->
-          <div v-if="currentControlMode === 'keyboard'" class="control-panel">
-            <div class="keyboard-instructions">
-              <h3>Contrôle par clavier</h3>
-              <p>Utilisez les touches suivantes pour contrôler le drone:</p>
-              <div class="key-grid">
-                <div class="key-group">
-                  <div class="key-item">
-                    <span class="key">↑</span>
-                    <span class="key-label">Monter</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">↓</span>
-                    <span class="key-label">Descendre</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">←</span>
-                    <span class="key-label">Rotation gauche</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">→</span>
-                    <span class="key-label">Rotation droite</span>
-                  </div>
+          <div class="control-modes-grid">
+            <!-- Mode contrôle clavier -->
+            <div class="mode-card" :class="{ 'mode-active': keyboardEnabled }">
+              <div class="mode-header">
+                <div class="mode-title">
+                  <i class="fas fa-keyboard"></i>
+                  <h3>Contrôle par clavier</h3>
                 </div>
-                <div class="key-group">
-                  <div class="key-item">
-                    <span class="key">Z</span>
-                    <span class="key-label">Avancer</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">S</span>
-                    <span class="key-label">Reculer</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">Q</span>
-                    <span class="key-label">Déplacement gauche</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">D</span>
-                    <span class="key-label">Déplacement droite</span>
-                  </div>
-                </div>
-                <div class="key-group">
-                  <div class="key-item">
-                    <span class="key">A</span>
-                    <span class="key-label">Décollage</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">E</span>
-                    <span class="key-label">Atterrissage</span>
-                  </div>
-                  <div class="key-item">
-                    <span class="key">P</span>
-                    <span class="key-label">Arrêt d'urgence</span>
-                  </div>
+                <div class="mode-toggle">
+                  <label class="switch">
+                    <input type="checkbox" v-model="keyboardEnabled" @change="handleKeyboardToggle">
+                    <span class="slider round"></span>
+                  </label>
                 </div>
               </div>
-              <div class="keyboard-toggle">
-                <button @click="toggleKeyboardControls" :class="{ 'btn-active': keyboardEnabled, 'btn-inactive': !keyboardEnabled }">
-                  {{ keyboardEnabled ? 'Désactiver contrôle clavier' : 'Activer contrôle clavier' }}
-                </button>
+              <div class="mode-content" v-if="keyboardEnabled">
+                <div class="key-grid">
+                  <div class="key-group">
+                    <div class="key-item">
+                      <span class="key">↑</span>
+                      <span class="key-label">Monter</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">↓</span>
+                      <span class="key-label">Descendre</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">←</span>
+                      <span class="key-label">Rotation gauche</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">→</span>
+                      <span class="key-label">Rotation droite</span>
+                    </div>
+                  </div>
+                  <div class="key-group">
+                    <div class="key-item">
+                      <span class="key">Z</span>
+                      <span class="key-label">Avancer</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">S</span>
+                      <span class="key-label">Reculer</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">Q</span>
+                      <span class="key-label">Dépl. gauche</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">D</span>
+                      <span class="key-label">Dépl. droite</span>
+                    </div>
+                  </div>
+                  <div class="key-group">
+                    <div class="key-item">
+                      <span class="key">A</span>
+                      <span class="key-label">Décollage</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">E</span>
+                      <span class="key-label">Atterrissage</span>
+                    </div>
+                    <div class="key-item">
+                      <span class="key">P</span>
+                      <span class="key-label">Arrêt d'urgence</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="mode-actions">
+                  <router-link to="/keyboard-config" class="btn-outline">
+                    <i class="fas fa-cog"></i> Configurer
+                  </router-link>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Mode contrôle vocal -->
-          <div v-if="currentControlMode === 'voice'" class="control-panel">
-            <div class="voice-control">
-              <h3>Contrôle vocal</h3>
-              <div class="voice-recognition">
-                <div class="recognition-header">
-                  <h4>Reconnaissance Vocale</h4>
+            <!-- Mode contrôle vocal -->
+            <div class="mode-card" :class="{ 'mode-active': voiceEnabled }">
+              <div class="mode-header">
+                <div class="mode-title">
+                  <i class="fas fa-microphone"></i>
+                  <h3>Contrôle vocal</h3>
+                </div>
+                <div class="mode-toggle">
+                  <label class="switch">
+                    <input type="checkbox" v-model="voiceEnabled" @change="handleVoiceToggle" :disabled="!recognitionEnabled">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="mode-content" v-if="voiceEnabled">
+                <div class="voice-status">
                   <div class="status-indicator" :class="{ 'is-active': isListening }">
                     <i class="fas" :class="isListening ? 'fa-microphone' : 'fa-microphone-slash'"></i>
                     <span>{{ isListening ? 'Écoute active' : 'Écoute inactive' }}</span>
                   </div>
-                </div>
-                
-                <div class="mic-visualizer">
-                  <div class="mic-icon" :class="{ 'pulse': isListening }">
-                    <i class="fas fa-microphone"></i>
+                  <div class="mic-visualizer">
+                    <div class="wave-container" :class="{ 'active': isListening }">
+                      <div class="wave"></div>
+                      <div class="wave"></div>
+                      <div class="wave"></div>
+                    </div>
                   </div>
-                  <div class="wave-container" :class="{ 'active': isListening }">
-                    <div class="wave"></div>
-                    <div class="wave"></div>
-                    <div class="wave"></div>
-                    <div class="wave"></div>
-                    <div class="wave"></div>
-                  </div>
+                  <button @click="toggleSpeechRecognition" class="btn-speech" :class="{ 'btn-active': isListening, 'btn-inactive': !isListening }">
+                    <i :class="isListening ? 'fas fa-stop' : 'fas fa-microphone'"></i>
+                    {{ isListening ? 'Arrêter' : 'Démarrer' }} l'écoute
+                  </button>
                 </div>
-                
                 <div v-if="recognizedText" class="recognized-text">
-                  Texte reconnu: "{{ recognizedText }}"
+                  Commande: "{{ recognizedText }}"
                 </div>
-                
-                <button @click="toggleSpeechRecognition" class="btn-speech" :class="{ 'btn-active': isListening, 'btn-inactive': !isListening }">
-                  <i :class="isListening ? 'fas fa-stop' : 'fas fa-microphone'"></i>
-                  {{ isListening ? 'Arrêter l\'écoute' : 'Démarrer l\'écoute' }}
-                </button>
               </div>
-
-              <div class="voice-commands">
-                <h4>Commandes vocales disponibles</h4>
-                <div class="commands-list">
-                  <div class="command-category">
-                    <h5>Contrôles de base</h5>
-                    <div class="command-item">
-                      <span class="command-phrase">"Décollage"</span>
-                      <span class="command-action">Fait décoller le drone</span>
-                    </div>
-                    <div class="command-item">
-                      <span class="command-phrase">"Atterrissage"</span>
-                      <span class="command-action">Fait atterrir le drone</span>
-                    </div>
-                  </div>
-                  <div class="command-category">
-                    <h5>Déplacements</h5>
-                    <div class="command-item">
-                      <span class="command-phrase">"Avance"</span>
-                      <span class="command-action">Déplace le drone vers l'avant</span>
-                    </div>
-                    <div class="command-item">
-                      <span class="command-phrase">"Recule"</span>
-                      <span class="command-action">Déplace le drone vers l'arrière</span>
-                    </div>
-                    <div class="command-item">
-                      <span class="command-phrase">"Gauche" / "Droite"</span>
-                      <span class="command-action">Déplace le drone latéralement</span>
-                    </div>
-                    <div class="command-item">
-                      <span class="command-phrase">"Monte" / "Descend"</span>
-                      <span class="command-action">Change l'altitude du drone</span>
-                    </div>
-                  </div>
-                </div>
+              <div class="mode-not-available" v-if="!recognitionEnabled">
+                <p>La reconnaissance vocale n'est pas disponible sur ce navigateur.</p>
               </div>
             </div>
-          </div>
 
-          <!-- Mode contrôle gestuel -->
-          <div v-if="currentControlMode === 'gesture'" class="control-panel">
-            <div class="gesture-control">
-              <h3>Contrôle gestuel</h3>
-              <div class="gesture-status">
-                <div class="status-indicator" :class="{ 'is-active': isGestureEnabled }">
-                  <span class="status-dot"></span>
-                  <span class="status-text">{{ isGestureEnabled ? 'Reconnaissance gestuelle activée' : 'Reconnaissance gestuelle désactivée' }}</span>
+            <!-- Mode contrôle gestuel -->
+            <div class="mode-card" :class="{ 'mode-active': gestureEnabled }">
+              <div class="mode-header">
+                <div class="mode-title">
+                  <i class="fas fa-hand-paper"></i>
+                  <h3>Contrôle gestuel</h3>
                 </div>
-                <button 
-                  @click="toggleGestureRecognition" 
-                  :disabled="!isDroneConnected || isGestureLoading"
-                  :class="{ 'btn-active': isGestureEnabled, 'btn-inactive': !isGestureEnabled }"
-                  class="btn-large">
-                  <i :class="isGestureLoading ? 'fas fa-spinner fa-spin' : (isGestureEnabled ? 'fas fa-hand-paper' : 'fas fa-play')"></i>
-                  {{ isGestureEnabled ? 'Désactiver la reconnaissance' : 'Activer la reconnaissance' }}
-                </button>
+                <div class="mode-toggle">
+                  <label class="switch">
+                    <input type="checkbox" v-model="gestureEnabled" @change="handleGestureToggle" :disabled="!isDroneConnected">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
               </div>
-
-              <div class="gesture-guide">
-                <h4>Guide des gestes</h4>
-                <div class="gestures-grid">
+              <div class="mode-content" v-if="gestureEnabled">
+                <div class="gesture-status">
+                  <div class="status-indicator" :class="{ 'is-active': isGestureEnabled }">
+                    <span class="status-dot"></span>
+                    <span class="status-text">{{ isGestureEnabled ? 'Activé' : 'Désactivé' }}</span>
+                  </div>
+                  <button 
+                    @click="toggleGestureRecognition" 
+                    :disabled="!isDroneConnected || isGestureLoading"
+                    :class="{ 'btn-active': isGestureEnabled, 'btn-inactive': !isGestureEnabled }"
+                    class="btn-medium">
+                    <i :class="isGestureLoading ? 'fas fa-spinner fa-spin' : (isGestureEnabled ? 'fas fa-hand-paper' : 'fas fa-play')"></i>
+                    {{ isGestureEnabled ? 'Désactiver' : 'Activer' }}
+                  </button>
+                </div>
+                <div class="gestures-mini-grid">
                   <div class="gesture-item">
                     <div class="gesture-image">
                       <i class="fas fa-hand-paper"></i>
                     </div>
-                    <div class="gesture-description">
-                      <h5>Main ouverte</h5>
-                      <p>Décollage</p>
-                    </div>
+                    <p>Décollage</p>
                   </div>
                   <div class="gesture-item">
                     <div class="gesture-image">
                       <i class="fas fa-fist-raised"></i>
                     </div>
-                    <div class="gesture-description">
-                      <h5>Poing fermé</h5>
-                      <p>Atterrissage</p>
-                    </div>
+                    <p>Atterrissage</p>
                   </div>
                   <div class="gesture-item">
                     <div class="gesture-image">
                       <i class="fas fa-thumbs-up"></i>
                     </div>
-                    <div class="gesture-description">
-                      <h5>Pouce en haut</h5>
-                      <p>Monter</p>
-                    </div>
+                    <p>Monter</p>
                   </div>
                   <div class="gesture-item">
                     <div class="gesture-image">
                       <i class="fas fa-thumbs-down"></i>
                     </div>
-                    <div class="gesture-description">
-                      <h5>Pouce en bas</h5>
-                      <p>Descendre</p>
-                    </div>
+                    <p>Descendre</p>
                   </div>
                 </div>
+              </div>
+              <div class="mode-not-available" v-if="!isDroneConnected">
+                <p>Connectez-vous à un drone pour utiliser le contrôle gestuel.</p>
               </div>
             </div>
-          </div>
 
-          <!-- Mode vision et reconnaissance -->
-          <div v-if="currentControlMode === 'vision'" class="control-panel">
-            <div class="vision-control">
-              <h3>Vision et reconnaissance</h3>
-              
-              <div class="vision-options">
-                <div class="option-group">
-                  <h4>Mode de suivi</h4>
-                  <div class="option-buttons">
-                    <button class="btn-outline active">
-                      <i class="fas fa-user"></i> Personne
-                    </button>
-                    <button class="btn-outline">
-                      <i class="fas fa-cube"></i> Objet
-                    </button>
-                    <button class="btn-outline">
-                      <i class="fas fa-map-marker-alt"></i> Point GPS
-                    </button>
-                  </div>
+            <!-- Mode vision et suivi -->
+            <div class="mode-card" :class="{ 'mode-active': visionEnabled }">
+              <div class="mode-header">
+                <div class="mode-title">
+                  <i class="fas fa-eye"></i>
+                  <h3>Vision et suivi</h3>
                 </div>
-                
-                <div class="option-group">
-                  <h4>Distance de suivi</h4>
-                  <input type="range" min="1" max="10" value="3" class="slider">
-                  <div class="range-labels">
-                    <span>Proche</span>
-                    <span>Éloigné</span>
-                  </div>
+                <div class="mode-toggle">
+                  <label class="switch">
+                    <input type="checkbox" v-model="visionEnabled" @change="handleVisionToggle" :disabled="!isDroneConnected">
+                    <span class="slider round"></span>
+                  </label>
                 </div>
               </div>
-
-              <div class="face-recognition-toggle">
-                <button @click="toggleFaceRecognitionSection" class="btn-outline">
-                  <i class="fas fa-user-plus"></i> {{ faceRecognitionExpanded ? 'Masquer' : 'Gérer' }} la reconnaissance faciale
-                </button>
-              </div>
-              
-              <div v-if="faceRecognitionExpanded" class="face-recognition">
-                <div class="upload-area" 
-                    :class="{ 'drag-over': isDragging, 'has-image': previewImage }"
-                    @dragover.prevent="onDragOver"
-                    @dragleave.prevent="onDragLeave"
-                    @drop.prevent="onDrop">
-                  <div v-if="!previewImage" class="upload-placeholder">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Glissez une photo ou <span class="browse-link" @click="triggerFileInput">parcourez</span></p>
-                  </div>
-                  <div v-else class="preview-container">
-                    <img :src="previewImage" alt="Aperçu" class="preview-image" />
-                    <button class="btn-remove-image" @click="removeImage">
-                      <i class="fas fa-times"></i>
+              <div class="mode-content" v-if="visionEnabled">
+                <div class="vision-options">
+                  <div class="vision-status">
+                    <div class="status-indicator" :class="{ 'is-active': isFaceTrackingEnabled }">
+                      <span class="status-dot"></span>
+                      <span class="status-text">Suivi facial {{ isFaceTrackingEnabled ? 'activé' : 'désactivé' }}</span>
+                    </div>
+                    <button 
+                      @click="toggleFaceTracking" 
+                      :disabled="!isDroneConnected || isFaceTrackingLoading"
+                      :class="{ 'btn-active': isFaceTrackingEnabled, 'btn-inactive': !isFaceTrackingEnabled }"
+                      class="btn-medium">
+                      <i :class="isFaceTrackingLoading ? 'fas fa-spinner fa-spin' : (isFaceTrackingEnabled ? 'fas fa-eye-slash' : 'fas fa-eye')"></i>
+                      {{ isFaceTrackingEnabled ? 'Désactiver' : 'Activer' }}
                     </button>
                   </div>
-                  <input type="file" 
-                        ref="fileInput" 
-                        class="file-input" 
-                        accept=".jpg,.jpeg,.png,.webp" 
-                        @change="onFileSelected" />
-                </div>
-                
-                <div class="person-form">
-                  <div class="form-group">
-                    <input type="text" 
-                          id="personName" 
-                          v-model="personName" 
-                          placeholder="Nom de la personne" 
-                          class="person-input"
-                          :disabled="!previewImage" />
-                  </div>
-                  <div class="form-controls">
-                    <button @click="savePerson" 
-                            :disabled="!canSavePerson"
-                            class="btn-primary">
-                      <i class="fas fa-save"></i> Enregistrer
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="face-tracking-section">
-                <div class="section-header">
-                  <h4>Suivi facial automatique</h4>
-                  <button @click="toggleFaceTrackingSection" class="btn-outline">
-                    <i class="fas fa-eye"></i> {{ faceTrackingExpanded ? 'Masquer' : 'Afficher' }} le suivi facial
+                  <button @click="faceTrackingExpanded = !faceTrackingExpanded" class="btn-text">
+                    <i :class="faceTrackingExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                    {{ faceTrackingExpanded ? 'Masquer' : 'Afficher' }} les paramètres
                   </button>
                 </div>
                 
                 <!-- Intégration du composant FaceTrackingControl -->
                 <FaceTrackingControl v-if="faceTrackingExpanded" />
+              </div>
+              <div class="mode-not-available" v-if="!isDroneConnected">
+                <p>Connectez-vous à un drone pour utiliser la vision et le suivi.</p>
               </div>
             </div>
           </div>
@@ -497,6 +424,12 @@ export default {
         speed: 0,
         signal: 0
       },
+      keyboardEnabled: true,      // Activé par défaut
+      voiceEnabled: false,
+      gestureEnabled: false,
+      visionEnabled: false,
+      isFaceTrackingEnabled: false,
+      isFaceTrackingLoading: false,
       capturedImages: [],
       dataUpdateInterval: null,
       consecutiveErrors: 0,
@@ -514,7 +447,6 @@ export default {
         { id: 'gesture', name: 'Gestes', icon: 'fas fa-hand-paper' },
         { id: 'vision', name: 'Vision', icon: 'fas fa-eye' }
       ],
-      currentControlMode: 'keyboard',
       
       // Voice control
       isListening: false,
@@ -580,26 +512,44 @@ export default {
     },
     canSavePerson() {
       return this.previewImage !== null && this.personName.trim() !== '';
+    },
+    isAllModesEnabled() {
+      return this.keyboardEnabled && this.voiceEnabled && 
+            this.gestureEnabled && this.visionEnabled;
+    },
+    isNoModeEnabled() {
+      return !this.keyboardEnabled && !this.voiceEnabled && 
+            !this.gestureEnabled && !this.visionEnabled;
     }
   },
   watch: {
-    currentControlMode(newVal) {
-      // Désactiver les modes précédents si nécessaire
-      if (newVal !== 'voice' && this.isListening) {
+    keyboardEnabled(newVal) {
+      if (newVal) {
+        this.enableKeyboardControls();
+      } else {
+        this.disableKeyboardControls();
+      }
+    },
+    voiceEnabled(newVal) {
+      if (newVal) {
+        this.checkSpeechRecognitionSupport();
+        if (this.recognitionEnabled) {
+          this.startSpeechRecognition();
+        }
+      } else if (this.isListening) {
         this.stopSpeechRecognition();
       }
-      
-      if (newVal !== 'gesture' && this.isGestureEnabled) {
-        this.stopGestureRecognition();
+    },
+    gestureEnabled(newVal) {
+      if (newVal && !this.isGestureEnabled) {
+        this.toggleGestureRecognition();
+      } else if (!newVal && this.isGestureEnabled) {
+        this.toggleGestureRecognition();
       }
-      
-      // Activation spécifique pour chaque mode
-      if (newVal === 'keyboard') {
-        this.enableKeyboardControls();
-      } else if (newVal === 'voice') {
-        this.checkSpeechRecognitionSupport();
-      } else if (newVal === 'gesture') {
-        this.checkGestureStatus();
+    },
+    visionEnabled(newVal) {
+      if (!newVal && this.isFaceTrackingEnabled) {
+        this.toggleFaceTracking();
       }
     }
   },
@@ -673,8 +623,66 @@ export default {
       }
     },
 
-    toggleFaceTrackingSection() {
-      this.faceTrackingExpanded = !this.faceTrackingExpanded;
+    toggleAllModes(enabled) {
+      this.keyboardEnabled = enabled;
+      this.voiceEnabled = enabled && this.recognitionEnabled;
+      this.gestureEnabled = enabled && this.isDroneConnected;
+      this.visionEnabled = enabled && this.isDroneConnected;
+    },
+  
+    handleKeyboardToggle() {
+      if (this.keyboardEnabled) {
+        this.enableKeyboardControls();
+      } else {
+        this.disableKeyboardControls();
+      }
+    },
+    
+    handleVoiceToggle() {
+      if (this.voiceEnabled) {
+        if (!this.isListening) {
+          this.startSpeechRecognition();
+        }
+      } else if (this.isListening) {
+        this.stopSpeechRecognition();
+      }
+    },
+    
+    handleGestureToggle() {
+      if (this.gestureEnabled !== this.isGestureEnabled) {
+        this.toggleGestureRecognition();
+      }
+    },
+    
+    handleVisionToggle() {
+      // Si on désactive la vision et que le suivi facial est actif, on le désactive aussi
+      if (!this.visionEnabled && this.isFaceTrackingEnabled) {
+        this.toggleFaceTracking();
+      }
+    },
+    
+    // Méthode pour le suivi facial
+    async toggleFaceTracking() {
+      if (!this.isDroneConnected) return;
+      
+      this.isFaceTrackingLoading = true;
+      
+      try {
+        // Utilisez votre API de suivi facial ici
+        const response = await axios.get(`${API_URL}/face_tracking/${this.isFaceTrackingEnabled ? 'stop' : 'start'}`);
+        
+        if (response.data.success) {
+          this.isFaceTrackingEnabled = !this.isFaceTrackingEnabled;
+          this.$notify && this.$notify.info(`Suivi facial ${this.isFaceTrackingEnabled ? 'activé' : 'désactivé'}`);
+        } else {
+          this.$notify && this.$notify.error(`Erreur: ${response.data.message}`);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la modification du suivi facial:', error);
+        this.$notify && this.$notify.error('Erreur de communication avec le serveur');
+      } finally {
+        this.isFaceTrackingLoading = false;
+      }
     },
     
     async connectDrone() {
@@ -2252,4 +2260,295 @@ export default {
     grid-template-columns: 1fr;
   }
 }
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-text:hover:not(:disabled) {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.btn-text:disabled {
+  color: var(--medium-gray);
+  cursor: not-allowed;
+}
+
+.control-modes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mode-card {
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.mode-card.mode-active {
+  background-color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+}
+
+.mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mode-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mode-title i {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.mode-title h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.mode-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.mode-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mode-not-available {
+  padding: 1.5rem;
+  color: var(--dark-gray);
+  text-align: center;
+  font-style: italic;
+}
+
+.mode-not-available p {
+  margin: 0;
+}
+
+.mode-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Switch toggle */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--medium-gray);
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+input:disabled + .slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Key grid simplifié */
+.key-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.key-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.key {
+  width: 30px;
+  height: 30px;
+  font-size: 0.8rem;
+}
+
+.key-label {
+  font-size: 0.8rem;
+}
+
+/* Voice control */
+.voice-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mic-visualizer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  width: 100%;
+}
+
+.btn-medium {
+  padding: 0.6rem 1rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+/* Gesture control */
+.gestures-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.gesture-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.gesture-image {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.gesture-item p {
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+/* Vision control */
+.vision-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vision-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Responsive design */
+@media screen and (max-width: 992px) {
+  .control-modes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gestures-mini-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-text {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .vision-status {
+    flex-direction: column;
+  }
+}
+
+
 </style>
