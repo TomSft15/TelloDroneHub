@@ -1,189 +1,155 @@
-# TelloDroneHub Project
+# Projet de contrôle de drone Tello DJI
 
-## Overview
+## Présentation du projet
 
-This project involves programming a **Tello DJI drone** to perform various interactive tasks. These include voice-controlled flight, gesture-controlled flight, facial recognition, and automatic face tracking. Additionally, a web application is developed to store and display data collected by the drone, such as photos, identified individuals, and performance statistics.
-
-### Functional Purpose
-As a developer or user, the goal is to control and use the drone intuitively and hands-free through:
-
-- **Voice commands** (e.g., "take off," "land," "move forward")
-- **Gesture recognition** (e.g., hand signals for movement commands)
-- **Facial recognition** (for detecting and tracking individuals)
-
-The web application allows users to:
-- View and manage photos captured by the drone
-- Access a list of individuals identified through facial recognition
-- Visualize drone performance statistics
+Ce projet consiste en une application complète pour contrôler un drone Tello DJI via différentes interfaces utilisateur intuitives. L'objectif principal est de proposer plusieurs modes d'interaction avec le drone, notamment par commandes vocales, gestes, et reconnaissance faciale, le tout intégré dans une interface web conviviale.
 
 ---
 
-## Features
+## Fonctionnalités principales
 
-### Drone Functionalities
-1. **Voice-Controlled Flight**
-   - Commands: take off, land, move, stop
-   - Implemented with Python using the Tello SDK and SpeechRecognition library
+### Contrôle du drone
+- **Contrôle par clavier** : Pilotage du drone avec les touches directionnelles et des raccourcis clavier
+- **Commandes vocales** : Contrôle du drone par reconnaissance vocale (ex: "décoller", "atterrir", "avancer")
+- **Contrôle gestuel** : Détection de gestes de la main pour piloter le drone
+- **Suivi facial automatique** : Le drone peut détecter et suivre un visage automatiquement
 
-2. **Gesture-Controlled Flight**
-   - Utilizes OpenCV and Mediapipe to detect and interpret hand gestures
+### Interface utilisateur
+- **Tableau de bord** : Visualisation en temps réel des données télémétriques du drone
+- **Flux vidéo** : Affichage du flux vidéo de la caméra embarquée du drone
+- **Capture de photos** : Possibilité de prendre des photos depuis le drone
+- **Personnalisation** : Configuration des contrôles clavier selon les préférences de l'utilisateur
 
-3. **Facial Recognition**
-   - Detects and identifies faces using AI models
-
-4. **Face Detection and Automatic Tracking**
-   - Automatically follows a detected face, adjusting the drone’s movement in real time
-
-### Web Application Functionalities
-1. **Photo Gallery**
-   - Display photos captured by the drone
-   - Filter by date and location
-   - Download options for users
-
-2. **Facial Recognition Data**
-   - List of detected individuals with timestamps and locations
-   - Search functionality
-
-3. **Performance Statistics**
-   - Number of flights, take-offs, landings, photos, and battery usage
-   - Distance traveled and total flight time
-
-4. **Admin Dashboard**
-   - Manage drone data (upload, edit, delete entries)
-   - Configure drone settings and API integrations
-
-5. **Graphical Reports**
-   - Visualize statistics with bar charts and pie charts for flights, battery usage, and photos
+### Autres fonctionnalités
+- **Reconnaissance faciale** : Détection et identification de personnes
+- **Statistiques de vol** : Suivi de la durée de vol, de la batterie, etc.
+- **Mode d'urgence** : Commandes d'urgence pour assurer la sécurité du vol
 
 ---
 
-## Technology Stack
+## Architecture technique
 
-- **Drone**: Tello DJI with built-in camera
-- **Programming Languages**: Python, JavaScript, SQL
-- **Front-end Framework**: React
-- **Back-end**: Node.js (or other server technology)
-- **Database**: SQL (MySQL, PostgreSQL, or equivalent)
-- **APIs and Libraries**:
-  - Tello SDK (https://dl-cdn.ryzerobotics.com/downloads/Tello/Tello%20SDK%202.0%20User%20Guide.pdf)
-  - OpenCV (https://opencv.org/)
-  - SpeechRecognition Library (https://pypi.org/project/SpeechRecognition/)
-  - Mediapipe (https://ai.google.dev/edge/mediapipe/solutions/guide?hl=fr)
+### Backend (Python)
+- Framework **Flask** pour l'API REST
+- **Flask-RESTx** pour la documentation API automatique avec Swagger
+- **OpenCV** pour le traitement d'image et la détection faciale
+- **Mediapipe** pour la reconnaissance de gestes
+- **SpeechRecognition** pour la reconnaissance vocale
+- **djitellopy** pour l'interfaçage avec le drone Tello
 
----
-
-## Project Timeline
-
-### Release 1.0 (25%)
-- **Features**:
-  - Basic voice commands for drone control
-  - Initial photo capture functionality
-  - API setup for communication with the web server
-  - Basic gallery view in the web application
-
-### Release 2.0 (50%)
-- **Features**:
-  - Gesture-based flight control
-  - Facial recognition system implementation
-  - Web application enhancements (facial data display, filtering, and search)
-  - Basic drone statistics tracking
-
-### Release 3.0 (75%)
-- **Features**:
-  - Automatic face tracking and real-time synchronization
-  - Advanced statistics visualization
-  - Admin dashboard for data management
-
-### Release 4.0 (100%)
-- **Features**:
-  - Full integration of drone and web application functionalities
-  - Performance optimization and scalability
-  - Security enhancements (API protection, encryption, access control)
-  - Comprehensive testing, documentation, and deployment
+### Frontend (Vue.js)
+- **Vue.js 3** comme framework frontend
+- Composants modulaires pour les différents modes de contrôle
+- Utilisation de **socket.io** pour la communication en temps réel
+- Interface responsive accessible sur ordinateur et mobile
 
 ---
 
-## Setup and Installation
+## Structure du projet
 
-### Prerequisites
-- Python 3.8+
-- Node.js 14+
-- SQL database (MySQL/PostgreSQL)
-- Tello DJI drone
-- Computer microphone for voice control
+Le projet est organisé en deux parties principales :
 
-### Steps
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/YourUsername/DroneInteractiveControl.git
-   ```
-2. Navigate to the project directory:
-   ```sh
-   cd DroneInteractiveControl
-   ```
-3. Install Python dependencies:
-   ```sh
-   pip install -r requirements.txt
-   ```
-4. Install Node.js dependencies:
-   ```sh
-   npm install
-   ```
-5. Set up the database by running the SQL script provided in the `db` folder.
-6. Configure API keys and environment variables (e.g., drone API access, database credentials) in the `.env` file.
-7. Start the back-end server:
-   ```sh
-   npm run server
-   ```
-8. Start the front-end application:
-   ```sh
-   npm run client
-   ```
+### Backend
+- `app.py` : Point d'entrée de l'application Flask
+- `controllers/` : Contrôleurs pour les différentes fonctionnalités (drone, vidéo, gestes, etc.)
+- `services/` : Logique métier pour le contrôle du drone, traitement vidéo, etc.
+- `models/` : Modèles de données
+- `utils/` : Utilitaires divers
+
+### Frontend
+- `src/components/` : Composants Vue.js réutilisables
+- `src/views/` : Vues principales de l'application
+- `src/services/` : Services pour l'API et les fonctionnalités frontales
+- `src/mixins/` : Fonctionnalités partagées comme les contrôles clavier
 
 ---
 
-## Usage
+## Installation et utilisation
 
-### Controlling the Drone
-- Use voice commands via the connected microphone
-- Use predefined gestures for movement control
+### Prérequis
+- Python 3.8+ avec pip
+- Node.js et yarn
+- Un drone Tello DJI
+- Une connexion Wi-Fi pour se connecter au drone
 
-### Accessing the Web Application
-- Navigate to `http://localhost:3000` (or the deployed URL)
-- Log in to view and manage drone data
+### Installation du backend
+1. Créer un environnement virtuel Python
+2. Installer les dépendances via `pip install -r requirements.txt`
+3. Lancer le serveur avec `python app.py`
 
----
+### Installation du frontend
+1. Installer les dépendances via `yarn install`
+2. Lancer le serveur de développement avec `yarn serve`
 
-## Contribution Guidelines
-
-1. Fork the repository.
-2. Create a new feature branch:
-   ```sh
-   git checkout -b feature/new-feature
-   ```
-3. Commit your changes:
-   ```sh
-   git commit -m "Add new feature"
-   ```
-4. Push the branch to your fork:
-   ```sh
-   git push origin feature/new-feature
-   ```
-5. Create a pull request.
+### Connexion au drone
+1. Allumer le drone Tello
+2. Se connecter au réseau Wi-Fi du drone depuis l'ordinateur
+3. Utiliser l'interface "Connecter un drone" dans l'application
+4. Une fois connecté, accéder au tableau de bord pour contrôler le drone
 
 ---
 
-## License
+## Caractéristiques techniques importantes
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+- API RESTful documentée avec Swagger UI
+- Architecture modulaire pour faciliter l'extension
+- Implémentation de différents types de contrôle (clavier, voix, geste)
+- Mode simulation permettant d'utiliser l'application sans drone
+- Conception responsive pour différentes tailles d'écran
+
+---
+
+## Résolution des problèmes courants
+
+1. **Le drone ne se connecte pas** :
+   - Vérifiez que vous êtes bien connecté au réseau Wi-Fi du drone
+   - Assurez-vous que la batterie du drone est suffisamment chargée
+   - Redémarrez le drone et l'application
+
+2. **La reconnaissance vocale ne fonctionne pas** :
+   - Vérifiez que votre navigateur supporte l'API Web Speech (Chrome recommandé)
+   - Assurez-vous que votre microphone est correctement configuré et autorisé
+
+3. **La détection de gestes n'est pas précise** :
+   - Assurez-vous d'être dans un environnement bien éclairé
+   - Positionnez-vous à environ 1 mètre de la caméra
+   - Effectuez des gestes clairs et distincts
+
+4. **Erreur "Port déjà utilisé"** :
+   - Assurez-vous qu'aucun autre programme n'utilise les ports 5000 (backend) ou 8080 (frontend)
+   - Redémarrez votre ordinateur pour libérer les ports
+
+---
+
+## Perspectives d'évolution
+
+- Ajout de fonctionnalités de cartographie et navigation GPS
+- Amélioration des algorithmes de reconnaissance faciale
+- Support de plusieurs drones simultanément
+- Mode missions programmées automatiques
+- Export des données de vol et intégration avec d'autres applications
+
+Ce projet représente une interface complète entre l'humain et le drone, offrant de multiples modalités d'interaction adaptées à différents cas d'usage, de l'utilisation ludique à des applications plus professionnelles.
+
+---
+
+## Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
 ## Contact
 
-For questions, suggestions, or issues, please contact:
+Pour toute question, suggestion ou problème, veuillez contacter :
 
-- **Thomas Fiancette** (Project Lead) - [email@example.com]
+- **Thomas Fiancette** (Chef de projet) - [email@example.com]
 - **Charles Fassel-Ashley** - [email@example.com]
 - **Eliyan Dochev** - [email@example.com]
 
+---
+
+## Remerciements
+
+- Équipe de développement DJI pour le SDK Tello
+- Contributeurs des bibliothèques OpenCV, Mediapipe et autres outils open-source utilisés dans ce projet
