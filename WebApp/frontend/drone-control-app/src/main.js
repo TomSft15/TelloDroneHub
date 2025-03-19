@@ -64,6 +64,12 @@ import {
   faStopCircle,
   faPowerOff,
   faPlay,
+  faUserPlus,
+  faUsers,
+  faCloudUploadAlt,
+  faCrosshairs,
+  faTrashAlt,
+  faCheck,
   // Add other icons you need
 } from '@fortawesome/free-solid-svg-icons';
 // Import Font Awesome component
@@ -129,6 +135,12 @@ library.add(
   faPlay,
   faFileExport,
   faPencilAlt,
+  faUserPlus,
+  faUsers,
+  faCloudUploadAlt,
+  faCrosshairs,
+  faTrashAlt,
+  faCheck,
   // Add other icons you added above
 );
 

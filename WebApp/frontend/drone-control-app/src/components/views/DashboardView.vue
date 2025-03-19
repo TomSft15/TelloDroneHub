@@ -372,6 +372,26 @@
                 <p>Connectez-vous à un drone pour utiliser la vision et le suivi.</p>
               </div>
             </div>
+            <div class="mode-card" :class="{ 'mode-active': faceRecognitionEnabled }">
+              <div class="mode-header">
+                <div class="mode-title">
+                  <font-awesome-icon icon="user-plus"/>
+                  <h3>Reconnaissance Faciale</h3>
+                </div>
+                <div class="mode-toggle">
+                  <label class="switch">
+                    <input type="checkbox" v-model="faceRecognitionEnabled">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="mode-content" v-if="faceRecognitionEnabled">
+                <FaceRecognitionControl />
+              </div>
+              <div class="mode-not-available" v-if="!faceRecognitionEnabled">
+                <p>Activez la reconnaissance faciale pour identifier les personnes.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -415,7 +435,7 @@ import emitter from '../../eventBus';
 import keyboardControls from '../../mixins/keyboardControls';
 import gestureService from '../../services/gestureService';
 import FaceTrackingControl from '../../components/FaceTrackingControl.vue';
-
+import FaceRecognitionControl from '../../components/FaceRecognitionControl.vue';
 
 const API_URL = 'http://localhost:5000';
 
@@ -423,7 +443,8 @@ export default {
   name: 'DashboardViewPage',
   mixins: [keyboardControls],
   components: {
-    FaceTrackingControl
+    FaceTrackingControl,
+    FaceRecognitionControl
   },
   data() {
     return {
@@ -444,6 +465,7 @@ export default {
       visionEnabled: false,
       isFaceTrackingEnabled: false,
       isFaceTrackingLoading: false,
+      faceRecognitionEnabled: false,
       capturedImages: [],
       dataUpdateInterval: null,
       consecutiveErrors: 0,
@@ -519,6 +541,16 @@ export default {
     };
   },
   computed: {
+    isAllModesEnabled() {
+      return this.keyboardEnabled && this.voiceEnabled && 
+            this.gestureEnabled && this.visionEnabled && 
+            this.faceRecognitionEnabled;
+    },
+    isNoModeEnabled() {
+      return !this.keyboardEnabled && !this.voiceEnabled && 
+            !this.gestureEnabled && !this.visionEnabled && 
+            !this.faceRecognitionEnabled;
+    },
     formattedTimeUntilNext() {
       if (!this.gestureStatus) return '0.0s';
       
@@ -647,6 +679,7 @@ export default {
       this.voiceEnabled = enabled && this.recognitionEnabled;
       this.gestureEnabled = enabled && this.isDroneConnected;
       this.visionEnabled = enabled && this.isDroneConnected;
+      this.faceRecognitionEnabled = enabled;
     },
   
     handleKeyboardToggle() {
