@@ -371,9 +371,9 @@ export default {
     
     toggleKeyboardControls() {
       if (this.keyboardEnabled) {
-        this.disableKeyboardControls();
-      } else {
         this.enableKeyboardControls();
+      } else {
+        this.disableKeyboardControls();
       }
     },
     
@@ -387,11 +387,6 @@ export default {
     },
     
     toggleSpeechRecognition() {
-      if (this.keyboardEnabled) {
-        this.disableKeyboardControls();
-      } else {
-        this.enableKeyboardControls();
-      }
       if (!this.recognitionEnabled) {
         alert('La reconnaissance vocale n\'est pas disponible sur ce navigateur.');
         return;
@@ -402,9 +397,6 @@ export default {
       } else {
         this.startSpeechRecognition();
       }
-      this.$notify && this.$notify.info(
-        this.keyboardEnabled ? 'Contrôles clavier activés' : 'Contrôles clavier désactivés'
-      );
     },
     
     startSpeechRecognition() {

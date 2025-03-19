@@ -15,7 +15,7 @@ import Navbar from './components/Navbar.vue';
 
 export default {
   created() {
-    localStorage.clear();
+    localStorage.removeItem('droneImages')
   },
   components: {
     Navbar,

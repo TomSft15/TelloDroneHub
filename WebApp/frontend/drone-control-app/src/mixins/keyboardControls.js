@@ -46,11 +46,16 @@ export default {
         this.keyboardEnabled = false;
         this.keyboardStatus = 'Contrôles clavier désactivés';
         console.log('Contrôles clavier désactivés');
+        this.pressedKeys = {};
       }
     },
     handleKeyDown(event) {
+
+      if (!this.keyboardEnabled) {
+        return;
+      }
       // Ignorer les événements si on est dans un champ de saisie
-      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.isContentEditable) {
         return;
       }
       
@@ -74,6 +79,10 @@ export default {
       }
     },
     handleKeyUp(event) {
+      if (!this.keyboardEnabled) {
+        return;
+      }
+
       const key = event.key;
       
       // Pour certaines commandes, il peut être utile d'envoyer une commande d'arrêt
@@ -83,7 +92,9 @@ export default {
         // Envoyer une commande pour arrêter le mouvement
         this.stopMovement();
       }
+      delete this.pressedKeys[key];
     },
+
     executeCommand(command) {
       console.log(`Exécution de la commande: ${command}`);
       
