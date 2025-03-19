@@ -1,10 +1,10 @@
 import os
 import cv2
-import face_recognition
 import threading
 import time
 import numpy as np
 import logging
+import pickle
 from datetime import datetime
 from services.drone_service import DroneService
 from services.video_service import VideoService
@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('face_recognition')
 
 class FaceRecognitionService:
-    """Service for facial recognition using the drone's camera"""
+    """Service for facial recognition using the drone's camera with OpenCV"""
 
     _instance = None
 
@@ -39,62 +39,130 @@ class FaceRecognitionService:
 
         # Face recognition data
         self.known_faces_dir = "known_faces"
-        self.known_face_encodings = []
-        self.known_face_names = []
+        self.model_data_dir = "model_data"
+        self.face_cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        self.face_cascade = cv2.CascadeClassifier(self.face_cascade_path)
+
+        # Create face recognizer
+        self.recognizer = cv2.face.LBPHFaceRecognizer_create()
+
+        # Recognition data
+        self.known_faces = []
+        self.known_names = []
         self.recognized_faces = []
         self.last_recognition_time = 0
         self.recognition_cooldown = 1.0  # Seconds between recognition attempts
 
-        # Ensure known_faces directory exists
+        # Ensure directories exist
         if not os.path.exists(self.known_faces_dir):
             os.makedirs(self.known_faces_dir)
             logger.info(f"Created directory {self.known_faces_dir}")
 
+        if not os.path.exists(self.model_data_dir):
+            os.makedirs(self.model_data_dir)
+            logger.info(f"Created directory {self.model_data_dir}")
+
         # Load known faces on initialization
         self.load_known_faces()
 
-    def load_known_faces(self):
-        """Load known faces from the known_faces directory"""
-        # Clear existing data
-        self.known_face_encodings = []
-        self.known_face_names = []
+    def _prepare_training_data(self):
+        """Prepare training data from face images"""
+        faces = []
+        labels = []
+        label_ids = {}
+        current_id = 0
 
-        logger.info(f"Loading known faces from {self.known_faces_dir}")
-
-        # Check if directory exists
-        if not os.path.exists(self.known_faces_dir):
-            logger.warning(f"Directory {self.known_faces_dir} does not exist")
-            return False
-
-        # Get all image files
+        # Process each image in the known_faces directory
         valid_extensions = ['.jpg', '.jpeg', '.png']
-        count = 0
 
         for filename in os.listdir(self.known_faces_dir):
             if any(filename.lower().endswith(ext) for ext in valid_extensions):
-                # Extract person name from filename (without extension)
+                # Get person name from filename
                 person_name = os.path.splitext(filename)[0]
+                if '_' in person_name:  # Handle timestamp in filename
+                    person_name = person_name.split('_')[0]
+
+                # Assign a numeric ID to each name
+                if person_name not in label_ids:
+                    label_ids[person_name] = current_id
+                    current_id += 1
+
+                # Load and process image
                 image_path = os.path.join(self.known_faces_dir, filename)
+                image = cv2.imread(image_path)
 
-                try:
-                    # Load and encode the face
-                    face_image = face_recognition.load_image_file(image_path)
-                    face_encodings = face_recognition.face_encodings(face_image)
+                if image is None:
+                    logger.warning(f"Could not read image: {image_path}")
+                    continue
 
-                    if len(face_encodings) > 0:
-                        # Take the first face found
-                        face_encoding = face_encodings[0]
-                        self.known_face_encodings.append(face_encoding)
-                        self.known_face_names.append(person_name)
-                        count += 1
-                        logger.info(f"Loaded face for {person_name}")
-                    else:
-                        logger.warning(f"No face detected in {filename}")
-                except Exception as e:
-                    logger.error(f"Error loading {filename}: {e}")
+                # Convert to grayscale
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        logger.info(f"Loaded {count} known faces")
-        return count > 0
+                # Detect faces
+                face_rects = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+
+                # Process each face
+                for (x, y, w, h) in face_rects:
+                    roi = gray[y:y+h, x:x+w]
+                    faces.append(roi)
+                    labels.append(label_ids[person_name])
+
+        # Create reverse mapping from ID to name
+        id_to_name = {v: k for k, v in label_ids.items()}
+
+        return faces, labels, id_to_name
+
+    def train_recognizer(self):
+        """Train the face recognizer with known faces"""
+        faces, labels, id_to_name = self._prepare_training_data()
+
+        if len(faces) == 0:
+            logger.warning("No faces found for training")
+            return False
+
+        # Convert labels to numpy array
+        labels = np.array(labels)
+
+        # Train the recognizer
+        self.recognizer.train(faces, labels)
+
+        # Save the trained model
+        model_path = os.path.join(self.model_data_dir, "trained_model.yml")
+        self.recognizer.save(model_path)
+
+        # Save the label mapping
+        label_map_path = os.path.join(self.model_data_dir, "label_map.pkl")
+        with open(label_map_path, 'wb') as f:
+            pickle.dump(id_to_name, f)
+
+        # Store the mapping in memory
+        self.known_names = id_to_name
+
+        logger.info(f"Trained recognizer with {len(faces)} faces of {len(id_to_name)} people")
+        return True
+
+    def load_known_faces(self):
+        """Load known faces and trained model"""
+        model_path = os.path.join(self.model_data_dir, "trained_model.yml")
+        label_map_path = os.path.join(self.model_data_dir, "label_map.pkl")
+
+        # Check if we have a trained model
+        if os.path.exists(model_path) and os.path.exists(label_map_path):
+            try:
+                # Load the face recognizer model
+                self.recognizer.read(model_path)
+
+                # Load the label mapping
+                with open(label_map_path, 'rb') as f:
+                    self.known_names = pickle.load(f)
+
+                logger.info(f"Loaded trained model with {len(self.known_names)} people")
+                return True
+            except Exception as e:
+                logger.error(f"Error loading trained model: {e}")
+
+        # If no model exists or loading failed, try to train a new one
+        return self.train_recognizer()
 
     def add_face(self, image_data, person_name):
         """
@@ -122,18 +190,25 @@ class FaceRecognitionService:
             nparr = np.frombuffer(image_data, np.uint8)
             image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-            # Check if a face is present
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            face_locations = face_recognition.face_locations(rgb_image)
+            if image is None:
+                return False, "Invalid image data"
 
-            if not face_locations:
+            # Check if a face is present
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+
+            if len(faces) == 0:
                 return False, "No face detected in the image"
 
             # Save the image
             cv2.imwrite(file_path, image)
+            logger.info(f"Saved face image for {person_name} to {file_path}")
 
-            # Reload known faces
-            self.load_known_faces()
+            # Retrain the recognizer
+            success = self.train_recognizer()
+
+            if not success:
+                return False, "Failed to train recognizer with the new face"
 
             return True, f"Face for {person_name} added successfully"
         except Exception as e:
@@ -149,7 +224,7 @@ class FaceRecognitionService:
             return False, "Drone not connected"
 
         # Check if we have any known faces
-        if not self.known_face_encodings:
+        if not self.known_names:
             success = self.load_known_faces()
             if not success:
                 return False, "No known faces found. Please add faces first."
@@ -199,6 +274,7 @@ class FaceRecognitionService:
     def _recognition_loop(self):
         """Main loop for face recognition"""
         logger.info("Starting face recognition loop")
+        confidence_threshold = 70  # Lower values are better for LBPH
 
         while not self.stop_event.is_set() and self.drone_service.connected:
             try:
@@ -217,46 +293,51 @@ class FaceRecognitionService:
 
                     frame = self.video_service.frame.copy()
 
-                # Convert to RGB for face_recognition
-                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Convert to grayscale for face detection
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-                # Find faces in the frame
-                face_locations = face_recognition.face_locations(rgb_frame)
-                face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+                # Detect faces
+                faces = self.face_cascade.detectMultiScale(
+                    gray,
+                    scaleFactor=1.1,
+                    minNeighbors=5,
+                    minSize=(30, 30)
+                )
 
                 # Reset recognized faces for this frame
                 current_faces = []
 
-                # Check each face against known faces
-                for face_encoding, (top, right, bottom, left) in zip(face_encodings, face_locations):
-                    # Compare with known faces
-                    matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
-                    name = "Unknown"
-                    confidence = 0
+                # Process each face
+                for (x, y, w, h) in faces:
+                    # Extract face region
+                    face_roi = gray[y:y+h, x:x+w]
 
-                    # Use the known face with the smallest distance to the new face
-                    face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
-                    if len(face_distances) > 0:
-                        best_match_index = np.argmin(face_distances)
-                        if matches[best_match_index]:
-                            name = self.known_face_names[best_match_index]
-                            confidence = 1 - face_distances[best_match_index]
+                    # Predict the person
+                    try:
+                        label_id, confidence = self.recognizer.predict(face_roi)
 
-                    # Add to recognized faces if confidence is high enough
-                    if name != "Unknown" and confidence > 0.6:
-                        # Create a dict with name, confidence, and face location
-                        face_info = {
-                            "name": name,
-                            "confidence": float(confidence),
-                            "location": {
-                                "top": top,
-                                "right": right,
-                                "bottom": bottom,
-                                "left": left
-                            },
-                            "timestamp": current_time
-                        }
-                        current_faces.append(face_info)
+                        # Lower confidence values are better in LBPH
+                        recognition_confidence = max(0, 1 - (confidence / 100))
+
+                        # If confidence is good enough
+                        if confidence < confidence_threshold and label_id in self.known_names:
+                            name = self.known_names[label_id]
+
+                            # Create face info
+                            face_info = {
+                                "name": name,
+                                "confidence": float(recognition_confidence),
+                                "location": {
+                                    "top": y,
+                                    "right": x + w,
+                                    "bottom": y + h,
+                                    "left": x
+                                },
+                                "timestamp": current_time
+                            }
+                            current_faces.append(face_info)
+                    except Exception as e:
+                        logger.error(f"Error during face prediction: {e}")
 
                 # Update recognized faces
                 self.recognized_faces = current_faces
