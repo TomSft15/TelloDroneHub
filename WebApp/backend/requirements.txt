@@ -4,3 +4,6 @@ flask-restx==0.5.1
 opencv-python==4.5.3.56
 numpy==1.21.2
 djitellopy==2.4.0
+face-recognition==1.3.0
+dlib==19.22.1
+Werkzeug==2.0.1
