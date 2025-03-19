@@ -1,6 +1,8 @@
 from flask_restx import Namespace, Resource, fields
 from services.drone_service import DroneService
 from services.video_service import VideoService
+from services.face_recognition_service import FaceRecognitionService
+import os
 
 # Création du namespace
 drone_ns = Namespace('drone', description='Opérations du drone')
@@ -14,6 +16,7 @@ response_model = drone_ns.model('Response', {
 # Initialisation des services
 drone_service = DroneService()
 video_service = VideoService()
+face_recognition_service = FaceRecognitionService()
 
 @drone_ns.route('/connect')
 class DroneConnect(Resource):
@@ -22,11 +25,15 @@ class DroneConnect(Resource):
     def get(self):
         """Connecter au drone"""
         success, message = drone_service.connect()
-        
+
         # Si la connexion est réussie, démarrer le streaming vidéo
         if success:
             video_service.start_video_stream()
-            
+
+            # Try to start face recognition if we have known faces
+            if os.path.exists("known_faces") and len(os.listdir("known_faces")) > 0:
+                face_recognition_service.start_recognition()
+
         return {"success": success, "message": message}
 
 @drone_ns.route('/disconnect')
@@ -35,9 +42,12 @@ class DroneDisconnect(Resource):
     @drone_ns.response(200, 'Succès', response_model)
     def get(self):
         """Déconnecter du drone"""
-        # Arrêter le streaming vidéo d'abord
+        # Stop face recognition first
+        face_recognition_service.stop_recognition()
+
+        # Arrêter le streaming vidéo ensuite
         video_service.stop_video_stream()
-        
+
         success, message = drone_service.disconnect()
         return {"success": success, "message": message}
 
@@ -266,6 +276,9 @@ class Quit(Resource):
     @drone_ns.response(200, 'Succès', response_model)
     def get(self):
         """Quitter le programme (atterrissage puis déconnexion)"""
+        # Stop face recognition
+        face_recognition_service.stop_recognition()
+
         if drone_service.connected and drone_service.drone:
             try:
                 drone_service.drone.land()
@@ -301,29 +314,29 @@ class CapturePhoto(Resource):
         try:
             # Récupérer le frame actuel
             frame = drone_service.drone.get_frame_read().frame
-            
+
             # Utiliser OpenCV pour convertir l'image en JPEG
             import cv2
             import os
             import base64
             from datetime import datetime
             from io import BytesIO
-            
+
             # Créer le dossier photos s'il n'existe pas
             if not os.path.exists("photos"):
                 os.makedirs("photos")
-                
+
             # Générer un nom de fichier avec la date et l'heure
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename = f"photos/photo_{timestamp}.jpg"
-            
+
             # Sauvegarder l'image sur le disque
             cv2.imwrite(filename, frame)
-            
+
             # Convertir l'image en base64 pour l'envoyer au frontend
             _, buffer = cv2.imencode('.jpg', frame)
             img_str = base64.b64encode(buffer).decode('utf-8')
-            
+
             return {
                 "success": True, 
                 "message": f"Photo prise et sauvegardée sous {filename}",

@@ -7,6 +7,7 @@ from controllers.video_controller import video_ns
 from controllers.status_controller import status_ns
 from controllers.gesture_controller import gesture_ns
 from controllers.face_tracking_controller import face_tracking_ns
+from controllers.face_recognition_controller import face_recognition_ns
 
 def create_app():
     app = Flask(__name__)
@@ -23,6 +24,7 @@ def create_app():
     api.add_namespace(status_ns)
     api.add_namespace(gesture_ns)
     api.add_namespace(face_tracking_ns)  # Ajout du namespace de suivi facial
+    api.add_namespace(face_recognition_ns)  # Added face recognition namespace
 
     # Test endpoint
     @api.route('/test')
