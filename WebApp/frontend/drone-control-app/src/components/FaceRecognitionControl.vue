@@ -129,10 +129,6 @@
           <p class="hint">Ajoutez des personnes en téléchargeant leurs photos</p>
         </div>
       </div>
-      
-      <div v-if="!faceRecognitionEnabled" class="mode-not-available">
-        <p>Activez la reconnaissance faciale pour commencer.</p>
-      </div>
     </div>
   </template>
   
