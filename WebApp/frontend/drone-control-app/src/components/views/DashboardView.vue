@@ -411,14 +411,10 @@
                   <div class="history-header">
                     <div class="history-cell">Nom</div>
                     <div class="history-cell">Dernière détection</div>
-                    <div class="history-cell text-center">Détections</div>
                   </div>
                   <div class="history-row" v-for="(entry, idx) in detectionHistory" :key="idx">
                     <div class="history-cell person-name">{{ entry.name }}</div>
                     <div class="history-cell detection-time">{{ formatDetectionTime(entry.lastSeen) }}</div>
-                    <div class="history-cell text-center">
-                      <span class="detection-count">{{ entry.count }}</span>
-                    </div>
                   </div>
                 </div>
                 <div v-if="detectionHistory.length === 0" class="empty-history">
