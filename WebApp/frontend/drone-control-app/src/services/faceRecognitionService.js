@@ -8,47 +8,80 @@ const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:5000';
  */
 class FaceRecognitionService {
   /**
-   * Ajoute une nouvelle personne à la base de données de reconnaissance
-   * @param {File} imageFile - Le fichier image contenant le visage
-   * @param {Object} personData - Les informations sur la personne
+   * Démarre la reconnaissance faciale
    * @returns {Promise} La réponse de l'API
    */
-  async addPerson(imageFile, personData) {
+  async startFaceRecognition() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/start`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors du démarrage de la reconnaissance faciale:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Arrête la reconnaissance faciale
+   * @returns {Promise} La réponse de l'API
+   */
+  async stopFaceRecognition() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/stop`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de l\'arrêt de la reconnaissance faciale:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtient le statut de la reconnaissance faciale
+   * @returns {Promise} Le statut
+   */
+  async getStatus() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/status`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du statut:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Ajoute une nouvelle personne à la base de données de reconnaissance
+   * @param {File} file - Le fichier image contenant le visage
+   * @param {Object} personData - Les informations sur la personne (nom)
+   * @returns {Promise} La réponse de l'API
+   */
+  async addPerson(file, personData) {
     try {
       const formData = new FormData();
-      formData.append('image', imageFile);
+      formData.append('file', file);
       formData.append('name', personData.name);
-      formData.append('relation', personData.relation);
       
-      // Dans un environnement réel, nous ferions un appel API ici
-      // En mode simulation, nous allons stocker dans localStorage
-      
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Convertir l'image en base64 pour stockage
-      const base64Image = await this._fileToBase64(imageFile);
-      
-      // Récupérer les personnes existantes
-      const storedPeople = JSON.parse(localStorage.getItem('recognitionPeople') || '[]');
-      
-      // Créer une nouvelle personne
-      const newPerson = {
-        id: Date.now(),
-        name: personData.name,
-        relation: personData.relation,
-        image: base64Image,
-        dateAdded: new Date().toISOString()
-      };
-      
-      // Ajouter à la liste
-      storedPeople.unshift(newPerson);
-      localStorage.setItem('recognitionPeople', JSON.stringify(storedPeople));
-      
-      return {
-        success: true,
-        data: newPerson
-      };
+      const response = await axios.post(`${API_URL}/face_recognition/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        return {
+          success: true,
+          data: {
+            id: Date.now(), // ID temporaire pour l'affichage
+            name: personData.name,
+            relation: personData.relation || 'other',
+            image: URL.createObjectURL(file), // URL temporaire pour l'affichage
+            dateAdded: new Date().toISOString()
+          },
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message);
+      }
     } catch (error) {
       console.error('Erreur lors de l\'ajout d\'une personne:', error);
       throw error;
@@ -61,18 +94,25 @@ class FaceRecognitionService {
    */
   async getPeople() {
     try {
-      // Dans un environnement réel, nous ferions un appel API ici
-      // En mode simulation, nous allons récupérer depuis localStorage
+      const response = await axios.get(`${API_URL}/face_recognition/people`);
       
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const storedPeople = JSON.parse(localStorage.getItem('recognitionPeople') || '[]');
-      
-      return {
-        success: true,
-        data: storedPeople
-      };
+      if (response.data.success) {
+        // Adapter le format de réponse pour correspondre à l'interface
+        const people = response.data.people.map(person => ({
+          id: person.name, // utiliser le nom comme ID
+          name: person.name,
+          relation: 'other', // valeur par défaut car non fournie par l'API
+          image: `${API_URL}/pictures_faces/${person.name}_profile.jpg`, // construction d'un chemin probable
+          dateAdded: new Date().toISOString() // valeur par défaut car non fournie par l'API
+        }));
+        
+        return {
+          success: true,
+          data: people
+        };
+      } else {
+        throw new Error('Erreur lors de la récupération des personnes');
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération des personnes:', error);
       throw error;
@@ -80,67 +120,104 @@ class FaceRecognitionService {
   }
   
   /**
-   * Met à jour les informations d'une personne
-   * @param {string} personId - L'identifiant de la personne
-   * @param {Object} personData - Les nouvelles informations
+   * Supprime une personne de la base de données
+   * @param {string} personId - Le nom de la personne à supprimer
    * @returns {Promise} La réponse de l'API
    */
-  async updatePerson(personId, personData) {
+  async deletePerson(personId) {
     try {
-      // Dans un environnement réel, nous ferions un appel API ici
-      // En mode simulation, nous allons mettre à jour le localStorage
+      const response = await axios.delete(`${API_URL}/face_recognition/people/${personId}`);
       
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const storedPeople = JSON.parse(localStorage.getItem('recognitionPeople') || '[]');
-      const index = storedPeople.findIndex(p => p.id === personId);
-      
-      if (index !== -1) {
-        // Mettre à jour les propriétés
-        storedPeople[index] = {
-          ...storedPeople[index],
-          ...personData
-        };
-        
-        localStorage.setItem('recognitionPeople', JSON.stringify(storedPeople));
-        
-        return {
-          success: true,
-          data: storedPeople[index]
-        };
-      } else {
-        throw new Error('Personne non trouvée');
-      }
+      return {
+        success: response.data.success,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Erreur lors de la mise à jour d\'une personne:', error);
+      console.error('Erreur lors de la suppression d\'une personne:', error);
       throw error;
     }
   }
   
   /**
-   * Supprime une personne de la base de données
-   * @param {string} personId - L'identifiant de la personne à supprimer
+   * Capture un visage depuis le flux vidéo actuel
+   * @param {string} name - Nom de la personne
    * @returns {Promise} La réponse de l'API
    */
-  async deletePerson(personId) {
+  async captureFacePhoto(name) {
     try {
-      // Dans un environnement réel, nous ferions un appel API ici
-      // En mode simulation, nous allons supprimer du localStorage
-      
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const storedPeople = JSON.parse(localStorage.getItem('recognitionPeople') || '[]');
-      const newList = storedPeople.filter(p => p.id !== personId);
-      
-      localStorage.setItem('recognitionPeople', JSON.stringify(newList));
+      const response = await axios.get(`${API_URL}/face_recognition/capture/${name}`);
       
       return {
-        success: true
+        success: response.data.success,
+        message: response.data.message
       };
     } catch (error) {
-      console.error('Erreur lors de la suppression d\'une personne:', error);
+      console.error('Erreur lors de la capture de la photo:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Obtient les détections actuelles du drone
+   * @returns {Promise} Les détections
+   */
+  async getDroneDetections() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/drone_detections`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des détections:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Obtient l'historique des détections
+   * @returns {Promise} L'historique
+   */
+  async getDetectionHistory() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/detection_history`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Recharge les visages connus
+   * @returns {Promise} La réponse de l'API
+   */
+  async reloadFaces() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/reload`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors du rechargement des visages:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Récupère les paramètres de reconnaissance
+   * @returns {Promise} Les paramètres
+   */
+  async getSettings() {
+    try {
+      const response = await axios.get(`${API_URL}/face_recognition/settings`);
+      
+      return {
+        success: true,
+        data: response.data.settings || {
+          enabled: true,
+          autoTracking: false,
+          confidenceThreshold: 75,
+          soundNotification: true
+        }
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des paramètres:', error);
       throw error;
     }
   }
@@ -152,69 +229,17 @@ class FaceRecognitionService {
    */
   async saveSettings(settings) {
     try {
-      // Dans un environnement réel, nous ferions un appel API ici
-      // En mode simulation, nous allons enregistrer dans localStorage
-      
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      localStorage.setItem('recognitionSettings', JSON.stringify(settings));
+      const response = await axios.post(`${API_URL}/face_recognition/settings`, settings);
       
       return {
-        success: true,
+        success: response.data.success,
+        message: response.data.message,
         data: settings
       };
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement des paramètres:', error);
       throw error;
     }
-  }
-  
-  /**
-   * Récupère les paramètres de reconnaissance
-   * @returns {Promise} Les paramètres
-   */
-  async getSettings() {
-    try {
-      // Dans un environnement réel, nous ferions un appel API ici
-      // En mode simulation, nous allons récupérer depuis localStorage
-      
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const storedSettings = JSON.parse(localStorage.getItem('recognitionSettings') || 'null');
-      
-      // Paramètres par défaut si aucun n'est enregistré
-      const defaultSettings = {
-        enabled: true,
-        autoTracking: false,
-        confidenceThreshold: 75,
-        soundNotification: true
-      };
-      
-      return {
-        success: true,
-        data: storedSettings || defaultSettings
-      };
-    } catch (error) {
-      console.error('Erreur lors de la récupération des paramètres:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Convertit un fichier en base64
-   * @param {File} file - Le fichier à convertir
-   * @returns {Promise<string>} La chaîne base64
-   * @private
-   */
-  _fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
   }
 }
 

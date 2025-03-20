@@ -348,87 +348,13 @@
         this.isSaving = true;
         
         try {
-          // Créer un canvas pour extraire uniquement la zone du visage
-          const img = new Image();
-          img.src = this.previewImage;
-          
-          // Attendre que l'image soit chargée
-          await new Promise((resolve) => {
-            if (img.complete) {
-              resolve();
-            } else {
-              img.onload = resolve;
-            }
-          });
-          
-          // Utiliser les coordonnées sauvegardées
-          if (!this.selectedFaceCoordinates) {
-            // Si les coordonnées n'ont pas été sauvegardées, utiliser des valeurs par défaut
-            // (peut arriver si on n'a pas utilisé confirmFaceSelection correctement)
-            this.selectedFaceCoordinates = {
-              x: 0,
-              y: 0,
-              width: img.naturalWidth,
-              height: img.naturalHeight,
-              imgWidth: img.naturalWidth,
-              imgHeight: img.naturalHeight
-            };
-            
-            console.warn('Aucune sélection de visage trouvée, utilisation de l\'image entière');
-          }
-          
-          const { x, y, width, height, imgWidth, imgHeight } = this.selectedFaceCoordinates;
-          
-          // Valider les coordonnées
-          if (width <= 0 || height <= 0 || 
-              x < 0 || y < 0 || 
-              x >= imgWidth || y >= imgHeight) {
-            throw new Error('Coordonnées de sélection invalides. Veuillez réessayer.');
-          }
-
-          // Créer le canvas pour la découpe
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          try {
-            // Dessiner la portion découpée de l'image
-            ctx.drawImage(
-              img,
-              x, y, width, height,
-              0, 0, width, height
-            );
-          } catch (e) {
-            console.error('Canvas drawing error:', e);
-            throw new Error('Erreur lors de l\'extraction du visage. Veuillez réessayer.');
-          }
-          
-          // Prévisualiser l'image découpée (pour le débogage)
-          const croppedPreview = canvas.toDataURL('image/jpeg');
-          
-          // Convertir le canvas en blob
-          const blob = await new Promise(resolve => {
-            canvas.toBlob(resolve, 'image/jpeg', 0.95);
-          });
-          
-          if (!blob) {
-            throw new Error('Échec de la création de l\'image. Veuillez réessayer avec une autre sélection.');
-          }
-          
-          // Créer un nouveau fichier
-          const faceFile = new File([blob], 'face_' + this.selectedFile.name, {
-            type: 'image/jpeg'
-          });
-          
           // Utiliser le service pour ajouter la personne
           const personData = {
             name: this.personName,
             relation: this.personRelation
           };
           
-          const response = await faceRecognitionService.addPerson(faceFile, personData);
+          const response = await faceRecognitionService.addPerson(this.selectedFile, personData);
           
           if (response.success) {
             // Ajouter à la liste locale
@@ -469,6 +395,8 @@
           console.error('Erreur lors du chargement des personnes:', error);
           this.showNotification('Erreur lors du chargement des personnes', 'error');
           this.people = [];
+        } finally {
+          this.loading = false;
         }
       },
       async deletePerson(person) {
@@ -490,6 +418,7 @@
           }
         }
       },
+
       formatDate(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString('fr-FR');

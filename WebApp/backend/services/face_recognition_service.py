@@ -447,7 +447,7 @@ class FaceRecognitionService:
             
             # Générer un nom de fichier
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = os.path.join(self.settings['photos_folder'], f"{person_name}_{timestamp}.jpg")
+            filename = os.path.join(self.settings['photos_folder'], f"{person_name}_profile.jpg")
             
             # Sauvegarder le fichier
             file_object.save(filename)

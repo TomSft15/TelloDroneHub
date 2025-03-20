@@ -436,6 +436,7 @@ import keyboardControls from '../../mixins/keyboardControls';
 import gestureService from '../../services/gestureService';
 import FaceTrackingControl from '../../components/FaceTrackingControl.vue';
 import FaceRecognitionControl from '../../components/FaceRecognitionControl.vue';
+import faceRecognitionService from '@/services/faceRecognitionService';
 
 const API_URL = 'http://localhost:5000';
 
@@ -647,6 +648,80 @@ export default {
     this.disableKeyboardControls();
   },
   methods: {
+    async fetchFaceDetections() {
+      try {
+        const response = await faceRecognitionService.getDroneDetections();
+        if (response && response.success) {
+          this.detectedPeople = response.current_detections || [];
+          this.recentDetections = response.recent_detections || [];
+          
+          // Mettre à jour l'historique des détections
+          if (response.recent_detections && response.recent_detections.length > 0) {
+            // Ajouter uniquement les nouvelles détections à l'historique
+            const now = new Date();
+            response.recent_detections.forEach(name => {
+              // Vérifier si la personne est déjà dans l'historique
+              const existingEntry = this.detectionHistory.find(entry => entry.name === name);
+              if (existingEntry) {
+                // Mettre à jour l'horodatage
+                existingEntry.lastSeen = now;
+                existingEntry.count += 1;
+              } else {
+                // Ajouter une nouvelle entrée
+                this.detectionHistory.unshift({
+                  name: name,
+                  firstSeen: now,
+                  lastSeen: now,
+                  count: 1
+                });
+              }
+            });
+            
+            // Limiter l'historique aux 20 dernières détections
+            this.detectionHistory = this.detectionHistory.slice(0, 20);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détections faciales:", error);
+      }
+    },
+
+    fetchDetectionHistory() {
+      try {
+        faceRecognitionService.getDetectionHistory()
+          .then(response => {
+            if (response && response.success) {
+              // Fusionner avec l'historique existant
+              const newHistory = response.detection_history || [];
+              newHistory.forEach(entry => {
+                // Vérifier si la personne est déjà dans l'historique
+                const existingIndex = this.detectionHistory.findIndex(e => e.name === entry.name);
+                if (existingIndex !== -1) {
+                  // Mettre à jour l'entrée existante
+                  this.detectionHistory[existingIndex].lastSeen = new Date(entry.last_seen);
+                } else {
+                  // Ajouter une nouvelle entrée
+                  this.detectionHistory.push({
+                    name: entry.name,
+                    firstSeen: new Date(entry.last_seen), // Nous n'avons pas first_seen dans l'API
+                    lastSeen: new Date(entry.last_seen),
+                    count: 1 // Valeur par défaut
+                  });
+                }
+              });
+              
+              // Trier par dernier vu
+              this.detectionHistory.sort((a, b) => b.lastSeen - a.lastSeen);
+            }
+          })
+          .catch(error => {
+            console.error("Erreur lors de la récupération de l'historique des détections:", error);
+          });
+      } catch (error) {
+        console.error("Erreur lors de la récupération de l'historique des détections:", error);
+      }
+    },
+    
     // Méthodes principales du dashboard
     async checkDroneStatus() {
       try {
@@ -691,20 +766,36 @@ export default {
     },
 
     handleFaceRecognitionToggle() {
-      // Si la reconnaissance faciale est activée, on initialise le composant
       if (this.faceRecognitionEnabled) {
-        // Notifier l'utilisateur que la reconnaissance faciale est activée
-        this.$notify && this.$notify.info('Reconnaissance faciale activée');
-        
-        // Si vous avez une référence au composant FaceRecognitionControl, vous pouvez y accéder
-        // this.$nextTick(() => {
-        //   if (this.$refs.faceRecognitionControl) {
-        //     this.$refs.faceRecognitionControl.loadPeople();
-        //   }
-        // });
+        // Démarrer la reconnaissance faciale
+        faceRecognitionService.startFaceRecognition()
+          .then(response => {
+            if (response.success) {
+              this.$notify && this.$notify.success('Reconnaissance faciale activée');
+              this.startDetectionPolling(); // Si ce n'est pas déjà fait
+            } else {
+              this.$notify && this.$notify.error(`Erreur: ${response.message}`);
+            }
+          })
+          .catch(error => {
+            console.error('Erreur lors de l\'activation de la reconnaissance faciale:', error);
+            this.$notify && this.$notify.error('Erreur lors de l\'activation de la reconnaissance faciale');
+          });
       } else {
-        // Notifier l'utilisateur que la reconnaissance faciale est désactivée
-        this.$notify && this.$notify.info('Reconnaissance faciale désactivée');
+        // Arrêter la reconnaissance faciale
+        faceRecognitionService.stopFaceRecognition()
+          .then(response => {
+            if (response.success) {
+              this.$notify && this.$notify.info('Reconnaissance faciale désactivée');
+              this.stopDetectionPolling(); // Si nécessaire
+            } else {
+              this.$notify && this.$notify.error(`Erreur: ${response.message}`);
+            }
+          })
+          .catch(error => {
+            console.error('Erreur lors de la désactivation de la reconnaissance faciale:', error);
+            this.$notify && this.$notify.error('Erreur lors de la désactivation de la reconnaissance faciale');
+          });
       }
     },
     
