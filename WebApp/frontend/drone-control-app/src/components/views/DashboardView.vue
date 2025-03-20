@@ -388,11 +388,10 @@
               <div class="mode-content" v-if="faceRecognitionEnabled">
                 <FaceRecognitionControl ref="faceRecognitionControl" />
               </div>
-              <div class="mode-not-available" v-if="!faceRecognitionEnabled">
+              <div class="mode-not-available" v-else>
                 <p>Activez la reconnaissance faciale pour identifier les personnes.</p>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -692,15 +691,23 @@ export default {
     },
 
     handleFaceRecognitionToggle() {
-      // Si on désactive le mode, et que le composant enfant existe
-      if (!this.faceRecognitionEnabled && this.$refs.faceRecognitionControl) {
-        // Si la reconnaissance est active, la désactiver
-        if (this.$refs.faceRecognitionControl.isFaceRecognitionActive) {
-          this.$refs.faceRecognitionControl.toggleFaceRecognition();
-        }
+      // Si la reconnaissance faciale est activée, on initialise le composant
+      if (this.faceRecognitionEnabled) {
+        // Notifier l'utilisateur que la reconnaissance faciale est activée
+        this.$notify && this.$notify.info('Reconnaissance faciale activée');
+        
+        // Si vous avez une référence au composant FaceRecognitionControl, vous pouvez y accéder
+        // this.$nextTick(() => {
+        //   if (this.$refs.faceRecognitionControl) {
+        //     this.$refs.faceRecognitionControl.loadPeople();
+        //   }
+        // });
+      } else {
+        // Notifier l'utilisateur que la reconnaissance faciale est désactivée
+        this.$notify && this.$notify.info('Reconnaissance faciale désactivée');
       }
     },
-
+    
     handleVoiceToggle() {
       if (!this.voiceEnabled && this.isListening) {
         this.stopSpeechRecognition();

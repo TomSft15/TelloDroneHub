@@ -1,21 +1,6 @@
 <template>
     <div class="face-recognition-control">
       <div class="mode-content">
-        <div class="activation-controls">
-          <div class="status-indicator" :class="{ 'is-active': isFaceRecognitionActive }">
-            <span class="status-dot"></span>
-            <span>{{ isFaceRecognitionActive ? 'Reconnaissance faciale active' : 'Reconnaissance faciale inactive' }}</span>
-          </div>
-          <button 
-            @click="toggleFaceRecognition" 
-            :disabled="!faceRecognitionEnabled || isLoading"
-            :class="{ 'btn-active': isFaceRecognitionActive, 'btn-inactive': !isFaceRecognitionActive }"
-            class="btn-medium">
-            <font-awesome-icon :icon="isLoading ? 'spinner' : (isFaceRecognitionActive ? 'user-slash' : 'user')" :spin="isLoading" />
-            {{ isFaceRecognitionActive ? 'Désactiver' : 'Activer' }}
-          </button>
-        </div>
-
         <div v-if="!showFaceSelector && !previewImage" class="upload-section">
           <div class="upload-area" 
                :class="{ 'drag-over': isDragging }"
@@ -157,8 +142,6 @@
     data() {
       return {
         faceRecognitionEnabled: false,
-        isFaceRecognitionActive: false,
-        isLoading: false,
         isDragging: false,
         previewImage: null,
         selectedFile: null,
@@ -208,44 +191,8 @@
       handleFaceRecognitionToggle() {
         if (this.faceRecognitionEnabled) {
           this.loadPeople();
-          if (!this.faceRecognitionEnabled && this.isFaceRecognitionActive) {
-          this.toggleFaceRecognition();
-          }
         }
       },
-      async toggleFaceRecognition() {
-        if (this.isLoading) return;
-        
-        this.isLoading = true;
-        
-        try {
-          if (this.isFaceRecognitionActive) {
-            // Désactiver la reconnaissance faciale
-            const response = await faceRecognitionService.stopFaceRecognition();
-            if (response.success) {
-              this.isFaceRecognitionActive = false;
-              this.showNotification('Reconnaissance faciale désactivée', 'info');
-            } else {
-              throw new Error(response.message || 'Erreur lors de la désactivation');
-            }
-          } else {
-            // Activer la reconnaissance faciale
-            const response = await faceRecognitionService.startFaceRecognition();
-            if (response.success) {
-              this.isFaceRecognitionActive = true;
-              this.showNotification('Reconnaissance faciale activée', 'success');
-            } else {
-              throw new Error(response.message || 'Erreur lors de l\'activation');
-            }
-          }
-        } catch (error) {
-          console.error('Erreur lors de la modification de l\'état de reconnaissance faciale:', error);
-          this.showNotification(`Erreur: ${error.message}`, 'error');
-        } finally {
-          this.isLoading = false;
-        }
-      },
-
       triggerFileInput() {
         this.$refs.fileInput.click();
       },
@@ -715,73 +662,6 @@
 </script>
   
 <style scoped>
-  .activation-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--light-gray);
-    padding: 1rem;
-    border-radius: var(--border-radius-md);
-    margin-bottom: 1.5rem;
-  }
-
-  .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    background-color: var(--light-gray);
-    color: var(--dark-gray);
-  }
-
-  .status-indicator.is-active {
-    background-color: var(--success-color);
-    color: white;
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--dark-gray);
-  }
-
-  .status-indicator.is-active .status-dot {
-    background-color: white;
-  }
-
-  .btn-medium {
-    padding: 0.6rem 1rem;
-    border-radius: var(--border-radius-md);
-    font-weight: 500;
-    font-size: 0.9rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-    border: none;
-    cursor: pointer;
-  }
-
-  .btn-inactive {
-    background-color: var(--primary-color);
-    color: white;
-  }
-
-  .btn-active {
-    background-color: #e74c3c;
-    color: white;
-  }
-
-  .btn-medium:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-
   .face-recognition-control {
     width: 100%;
   }
