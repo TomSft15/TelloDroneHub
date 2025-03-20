@@ -827,9 +827,6 @@ export default {
           // Sauvegarder les images dans le localStorage
           localStorage.setItem('droneImages', JSON.stringify(this.capturedImages.slice(0, 20)));
           
-          console.log('Photo capturée avec succès');
-          alert('Photo capturée !');
-          
           return true;
         } else {
           alert('Erreur lors de la capture: ' + (response.data.message || 'Erreur inconnue'));

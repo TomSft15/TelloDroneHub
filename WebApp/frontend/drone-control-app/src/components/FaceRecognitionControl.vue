@@ -36,7 +36,7 @@
         
         <div v-if="showFaceSelector" class="face-selector-container">
           <div class="selector-instructions">
-            <p>Positionnez et redimensionnez le cadre pour englober le visage</p>
+            <p><strong>Instructions:</strong> Positionnez et redimensionnez le rectangle pour englober le visage à reconnaître. Utilisez les poignées aux coins pour redimensionner.</p>
           </div>
           <div class="selector-controls">
             <button class="btn-cancel" @click="cancelFaceSelection">
@@ -49,15 +49,15 @@
           <div class="selector-canvas-container" ref="canvasContainer">
             <img :src="previewImage" ref="selectorImage" class="selector-image"/>
             <div class="face-rectangle" 
-                 ref="faceRect"
-                 :style="{
-                   left: `${faceRect.x}px`,
-                   top: `${faceRect.y}px`,
-                   width: `${faceRect.width}px`,
-                   height: `${faceRect.height}px`
-                 }"
-                 @mousedown="startDrag"
-                 @touchstart="startDrag">
+                ref="faceRect"
+                :style="{
+                  left: `${faceRect.x}px`,
+                  top: `${faceRect.y}px`,
+                  width: `${faceRect.width}px`,
+                  height: `${faceRect.height}px`
+                }"
+                @mousedown="startDrag"
+                @touchstart="startDrag">
               <div class="resize-handle top-left" @mousedown="startResize('topLeft')" @touchstart="startResize('topLeft')"></div>
               <div class="resize-handle top-right" @mousedown="startResize('topRight')" @touchstart="startResize('topRight')"></div>
               <div class="resize-handle bottom-left" @mousedown="startResize('bottomLeft')" @touchstart="startResize('bottomLeft')"></div>
@@ -87,6 +87,8 @@
             <button class="btn-cancel" @click="cancelPersonForm">
               <font-awesome-icon icon="times"/> Annuler
             </button>
+          </div>
+          <div class="person-actions">
             <button class="btn-primary" @click="savePerson" :disabled="!personName">
               <font-awesome-icon icon="save"/> Enregistrer
             </button>
@@ -145,6 +147,7 @@
         selectedFile: null,
         showFaceSelector: false,
         confirmSelection: false,
+        selectedFaceCoordinates: null,
         personName: '',
         personRelation: 'family',
         people: [],
@@ -286,9 +289,54 @@
         this.showFaceSelector = false;
       },
       confirmFaceSelection() {
+        // Récupérer les dimensions de l'image et du conteneur avant de fermer
+        if (this.$refs.canvasContainer && this.$refs.selectorImage) {
+          const imgElement = this.$refs.selectorImage;
+          const containerRect = this.$refs.canvasContainer.getBoundingClientRect();
+          
+          // Calculer les ratios et sauvegarder les coordonnées précisément
+          // Get the computed dimensions of the image as it appears in the DOM
+          const computedStyle = window.getComputedStyle(imgElement);
+          const displayWidth = parseInt(computedStyle.width, 10);
+          const displayHeight = parseInt(computedStyle.height, 10);
+          
+          // Get the natural dimensions of the original image
+          const imgWidth = imgElement.naturalWidth;
+          const imgHeight = imgElement.naturalHeight;
+          
+          // Calculate the scaling factors
+          const scaleX = imgWidth / displayWidth;
+          const scaleY = imgHeight / displayHeight;
+          
+          // Calculate image position within the container
+          const imgLeft = (containerRect.width - displayWidth) / 2;
+          const imgTop = (containerRect.height - displayHeight) / 2;
+          
+          // Ajuster les coordonnées du rectangle relative à l'image
+          const relativeX = this.faceRect.x - imgLeft;
+          const relativeY = this.faceRect.y - imgTop;
+          
+          // Appliquer la mise à l'échelle pour obtenir les coordonnées dans l'image originale
+          const actualX = Math.max(0, relativeX * scaleX);
+          const actualY = Math.max(0, relativeY * scaleY);
+          const actualWidth = Math.min(imgWidth - actualX, this.faceRect.width * scaleX);
+          const actualHeight = Math.min(imgHeight - actualY, this.faceRect.height * scaleY);
+          
+          // Stocker les coordonnées pour un usage ultérieur
+          this.selectedFaceCoordinates = {
+            x: actualX,
+            y: actualY,
+            width: actualWidth,
+            height: actualHeight,
+            imgWidth: imgWidth,
+            imgHeight: imgHeight
+          };
+        }
+        
         this.showFaceSelector = false;
         this.confirmSelection = true;
       },
+
       cancelPersonForm() {
         this.confirmSelection = false;
         this.personName = '';
@@ -313,37 +361,61 @@
             }
           });
           
-          // Calculer les ratios pour s'assurer que les coordonnées du rectangle sont correctes
-          const imgElement = this.$refs.selectorImage;
-          const displayWidth = imgElement ? imgElement.clientWidth : img.width;
-          const displayHeight = imgElement ? imgElement.clientHeight : img.height;
+          // Utiliser les coordonnées sauvegardées
+          if (!this.selectedFaceCoordinates) {
+            // Si les coordonnées n'ont pas été sauvegardées, utiliser des valeurs par défaut
+            // (peut arriver si on n'a pas utilisé confirmFaceSelection correctement)
+            this.selectedFaceCoordinates = {
+              x: 0,
+              y: 0,
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+              imgWidth: img.naturalWidth,
+              imgHeight: img.naturalHeight
+            };
+            
+            console.warn('Aucune sélection de visage trouvée, utilisation de l\'image entière');
+          }
           
-          const scaleX = img.width / displayWidth;
-          const scaleY = img.height / displayHeight;
+          const { x, y, width, height, imgWidth, imgHeight } = this.selectedFaceCoordinates;
           
-          // Coordonnées ajustées du rectangle sur l'image originale
-          const actualX = this.faceRect.x * scaleX;
-          const actualY = this.faceRect.y * scaleY;
-          const actualWidth = this.faceRect.width * scaleX;
-          const actualHeight = this.faceRect.height * scaleY;
-          
-          // Créer un nouvel objet File à partir de la portion de l'image
+          // Valider les coordonnées
+          if (width <= 0 || height <= 0 || 
+              x < 0 || y < 0 || 
+              x >= imgWidth || y >= imgHeight) {
+            throw new Error('Coordonnées de sélection invalides. Veuillez réessayer.');
+          }
+
+          // Créer le canvas pour la découpe
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
-          canvas.width = actualWidth;
-          canvas.height = actualHeight;
+          canvas.width = width;
+          canvas.height = height;
           
-          ctx.drawImage(
-            img,
-            actualX, actualY, actualWidth, actualHeight,
-            0, 0, actualWidth, actualHeight
-          );
+          try {
+            // Dessiner la portion découpée de l'image
+            ctx.drawImage(
+              img,
+              x, y, width, height,
+              0, 0, width, height
+            );
+          } catch (e) {
+            console.error('Canvas drawing error:', e);
+            throw new Error('Erreur lors de l\'extraction du visage. Veuillez réessayer.');
+          }
+          
+          // Prévisualiser l'image découpée (pour le débogage)
+          const croppedPreview = canvas.toDataURL('image/jpeg');
           
           // Convertir le canvas en blob
           const blob = await new Promise(resolve => {
             canvas.toBlob(resolve, 'image/jpeg', 0.95);
           });
+          
+          if (!blob) {
+            throw new Error('Échec de la création de l\'image. Veuillez réessayer avec une autre sélection.');
+          }
           
           // Créer un nouveau fichier
           const faceFile = new File([blob], 'face_' + this.selectedFile.name, {
@@ -382,6 +454,7 @@
         this.personName = '';
         this.personRelation = 'family';
         this.confirmSelection = false;
+        this.selectedFaceCoordinates = null; // Ajoutez cette ligne
       },
       async loadPeople() {
         try {
@@ -476,6 +549,27 @@
           rectStartHeight: this.faceRect.height
         };
       },
+      initializeFaceRect(container, img) {
+        // Get image dimensions as displayed in the container
+        const imgWidth = img.clientWidth;
+        const imgHeight = img.clientHeight;
+        
+        // Calculate image position within container (for centering)
+        const imgLeft = (container.clientWidth - imgWidth) / 2;
+        const imgTop = (container.clientHeight - imgHeight) / 2;
+        
+        // Set initial rectangle to be centered on the image
+        // and about 40% of the image size
+        const rectWidth = Math.min(150, imgWidth * 0.4);
+        const rectHeight = Math.min(150, imgHeight * 0.4);
+        
+        this.faceRect = {
+          x: imgLeft + (imgWidth - rectWidth) / 2,
+          y: imgTop + (imgHeight - rectHeight) / 2,
+          width: rectWidth,
+          height: rectHeight
+        };
+      },
       onMouseMove(event) {
         if (!this.dragInfo.isDragging && !this.dragInfo.isResizing) return;
         
@@ -552,14 +646,11 @@
             newHeight = container.height - newY;
           }
           
-          // Maintenir les proportions (aspect ratio 1:1)
-          const square = Math.min(newWidth, newHeight);
-          
-          // Mettre à jour les propriétés du rectangle
+          // Mettre à jour les propriétés du rectangle - REMOVE THE SQUARE CONSTRAINT
           this.faceRect.x = newX;
           this.faceRect.y = newY;
-          this.faceRect.width = square;
-          this.faceRect.height = square;
+          this.faceRect.width = newWidth;
+          this.faceRect.height = newHeight;
         }
       },
       stopDragResize() {
@@ -733,9 +824,7 @@
   
   /* Preview container */
   .preview-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    text-align: center;
   }
   
   .preview-controls {
@@ -752,9 +841,11 @@
   }
   
   .preview-image {
-    width: 100%;
-    height: auto;
-    display: block;
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   /* Face selector */
@@ -765,9 +856,13 @@
   }
   
   .selector-instructions {
-    text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: rgba(52, 152, 219, 0.1);
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid var(--primary-color);
   }
+
   
   .selector-controls {
     display: flex;
@@ -783,35 +878,52 @@
     border-radius: var(--border-radius-md);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     background-color: rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .selector-image {
     max-width: 100%;
     max-height: 100%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    object-fit: contain;
   }
   
   .face-rectangle {
     position: absolute;
     border: 2px solid var(--primary-color);
-    background-color: rgba(52, 152, 219, 0.2);
-    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
+    background-color: transparent; /* Changed from semi-transparent blue */
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5); /* Darken outside the selection */
     cursor: move;
+    z-index: 2;
+    /* Add new clip-path to create a cutout effect */
+    clip-path: polygon(
+      0 0, 0 100%, 100% 100%, 100% 0,
+      0 0, 0 100%, 100% 100%, 100% 0
+    );
   }
   
   .resize-handle {
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     background-color: white;
     border: 2px solid var(--primary-color);
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    z-index: 2;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    z-index: 3;
   }
   
+  .face-rectangle::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px dashed white;
+    pointer-events: none;
+  }
+
   .top-left {
     top: -5px;
     left: -5px;
@@ -1065,6 +1177,7 @@
   /* Buttons */
   .btn-primary,
   .btn-cancel {
+    margin-bottom: 10px;
     padding: 0.75rem 1.25rem;
     border-radius: var(--border-radius-md);
     font-weight: 500;
