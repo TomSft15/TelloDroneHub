@@ -118,6 +118,18 @@
           <h2>Données de vol</h2>
         </div>
         <div class="data-table">
+          <h4 class="section-title">Personnes détectées</h4>
+          <div class="data-row">
+            <div class="data-label">Actuellement</div>
+            <div class="data-value people-badges">
+              <span v-if="detectedPeople.length === 0">Aucune</span>
+              <span v-for="(person, idx) in detectedPeople" :key="idx" class="person-badge" 
+                    :title="`Confiance: ${(person.confidence * 100).toFixed(1)}%`">
+                {{ person.name }}
+                <span class="confidence-indicator" :style="{ width: `${person.confidence * 100}%` }"></span>
+              </span>
+            </div>
+          </div>
           <div class="data-row">
             <div class="data-label">Altitude</div>
             <div class="data-value">{{ droneData.height }} m</div>
@@ -392,6 +404,29 @@
                 <p>Activez la reconnaissance faciale pour identifier les personnes.</p>
               </div>
             </div>
+            <div class="detection-history-container" v-if="faceRecognitionEnabled">
+              <h4 class="section-subtitle">Historique des détections</h4>
+              <div class="detection-history">
+                <div class="history-table">
+                  <div class="history-header">
+                    <div class="history-cell">Nom</div>
+                    <div class="history-cell">Dernière détection</div>
+                    <div class="history-cell text-center">Détections</div>
+                  </div>
+                  <div class="history-row" v-for="(entry, idx) in detectionHistory" :key="idx">
+                    <div class="history-cell person-name">{{ entry.name }}</div>
+                    <div class="history-cell detection-time">{{ formatDetectionTime(entry.lastSeen) }}</div>
+                    <div class="history-cell text-center">
+                      <span class="detection-count">{{ entry.count }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="detectionHistory.length === 0" class="empty-history">
+                  <p>Aucune détection enregistrée</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -476,7 +511,10 @@ export default {
       recordingInterval: null,
       showAllPhotosModal: false,
       recordingStartTime: 0,
-      
+      detectedPeople: [], // Pour stocker les personnes actuellement détectées
+      detectionHistory: [], // Pour stocker l'historique des détections
+      detectionPollingInterval: null,
+
       // Modes de contrôle
       controlModes: [
         { id: 'keyboard', name: 'Clavier', icon: 'fas fa-keyboard' },
@@ -584,6 +622,13 @@ export default {
         this.stopSpeechRecognition();
       }
     },
+    faceRecognitionEnabled(newVal) {
+      if (newVal) {
+        this.startDetectionPolling();
+      } else {
+        this.stopDetectionPolling();
+      }
+    },
     gestureEnabled(newVal) {
       if (newVal && !this.isGestureEnabled) {
         this.toggleGestureRecognition();
@@ -608,6 +653,8 @@ export default {
     this.loadPeople();
 
     this.loadSavedImages();
+
+    this.startDetectionPolling();
     
     // Écouter les événements avec l'émetteur
     emitter.on('drone-connected', () => {
@@ -645,6 +692,7 @@ export default {
     
     // Nettoyer les écouteurs d'événements du clavier
     this.disableKeyboardControls();
+    this.stopDetectionPolling();
   },
   methods: {
     // Méthodes principales du dashboard
@@ -666,6 +714,125 @@ export default {
         this.isConnected = false;
         this.isDroneConnected = false;
         localStorage.removeItem('droneConnected');
+      }
+    },
+
+    async fetchFaceDetections() {
+      try {
+        const response = await axios.get(`${API_URL}/face_recognition/drone_detections`);
+        if (response.data && response.data.success) {
+          this.detectedPeople = response.data.current_detections || [];
+          this.recentDetections = response.data.recent_detections || [];
+          
+          // Mettre à jour l'historique des détections
+          if (response.data.recent_detections && response.data.recent_detections.length > 0) {
+            // Ajouter uniquement les nouvelles détections à l'historique
+            const now = new Date();
+            response.data.recent_detections.forEach(name => {
+              // Vérifier si la personne est déjà dans l'historique
+              const existingEntry = this.detectionHistory.find(entry => entry.name === name);
+              if (existingEntry) {
+                // Mettre à jour l'horodatage
+                existingEntry.lastSeen = now;
+                existingEntry.count += 1;
+              } else {
+                // Ajouter une nouvelle entrée
+                this.detectionHistory.unshift({
+                  name: name,
+                  firstSeen: now,
+                  lastSeen: now,
+                  count: 1
+                });
+              }
+            });
+            
+            // Limiter l'historique aux 20 dernières détections
+            this.detectionHistory = this.detectionHistory.slice(0, 20);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détections faciales:", error);
+      }
+    },
+
+    fetchDetectionHistory() {
+      try {
+        axios.get(`${API_URL}/face_recognition/detection_history`)
+          .then(response => {
+            if (response.data && response.data.success) {
+              // Fusionner avec l'historique existant
+              const newHistory = response.data.detection_history || [];
+              newHistory.forEach(entry => {
+                // Vérifier si la personne est déjà dans l'historique
+                const existingIndex = this.detectionHistory.findIndex(e => e.name === entry.name);
+                if (existingIndex !== -1) {
+                  // Mettre à jour l'entrée existante
+                  this.detectionHistory[existingIndex].lastSeen = new Date(entry.last_seen);
+                } else {
+                  // Ajouter une nouvelle entrée
+                  this.detectionHistory.push({
+                    name: entry.name,
+                    firstSeen: new Date(entry.last_seen), // Nous n'avons pas first_seen dans l'API
+                    lastSeen: new Date(entry.last_seen),
+                    count: 1 // Valeur par défaut
+                  });
+                }
+              });
+              
+              // Trier par dernier vu
+              this.detectionHistory.sort((a, b) => b.lastSeen - a.lastSeen);
+            }
+          })
+          .catch(error => {
+            console.error("Erreur lors de la récupération de l'historique des détections:", error);
+          });
+      } catch (error) {
+        console.error("Erreur lors de la récupération de l'historique des détections:", error);
+      }
+    },
+
+    startDetectionPolling() {
+      // Récupérer immédiatement les données
+      this.fetchFaceDetections();
+      this.fetchDetectionHistory();
+      
+      // Configurer l'intervalle pour les récupérer régulièrement
+      this.detectionPollingInterval = setInterval(() => {
+        this.fetchFaceDetections();
+      }, 2000); // Toutes les 2 secondes
+    },
+
+    stopDetectionPolling() {
+      if (this.detectionPollingInterval) {
+        clearInterval(this.detectionPollingInterval);
+        this.detectionPollingInterval = null;
+      }
+    },
+
+    formatDetectionTime(date) {
+      if (!date) return '';
+      const now = new Date();
+      const diff = now - date;
+      
+      // Si moins d'une minute
+      if (diff < 60000) {
+        return 'à l\'instant';
+      }
+      // Si moins d'une heure
+      else if (diff < 3600000) {
+        const minutes = Math.floor(diff / 60000);
+        return `il y a ${minutes} min`;
+      }
+      // Si aujourd'hui
+      else if (date.toDateString() === now.toDateString()) {
+        return `aujourd'hui à ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+      }
+      // Sinon
+      else {
+        return date.toLocaleDateString('fr-FR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
       }
     },
 
@@ -1276,6 +1443,139 @@ export default {
 </script>
 
 <style scoped>
+.detected-people-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--light-gray);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+}
+
+.people-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.person-badge {
+  background-color: var(--light-gray);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.person-badge.recent {
+  background-color: rgba(52, 152, 219, 0.15);
+  color: var(--primary-color);
+}
+
+.confidence-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: var(--primary-color);
+}
+
+/* Styles pour l'historique des détections */
+.detection-history-container {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--light-gray);
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.detection-history {
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-header {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--dark-gray);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.history-row {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.history-row:last-child {
+  border-bottom: none;
+}
+
+.history-row:hover {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.history-cell {
+  padding: 0.75rem 0.5rem;
+  flex: 1;
+}
+
+.person-name {
+  font-weight: 500;
+  color: var(--text-color);
+  flex: 2;
+}
+
+.detection-time {
+  color: var(--dark-gray);
+  font-size: 0.85rem;
+  flex: 2;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.detection-count {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.empty-history {
+  padding: 2rem;
+  text-align: center;
+  color: var(--dark-gray);
+  font-style: italic;
+}
+
 .dashboard-container {
   max-width: 1400px;
   margin: 0 auto;
