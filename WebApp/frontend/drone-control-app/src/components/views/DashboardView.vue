@@ -380,18 +380,19 @@
                 </div>
                 <div class="mode-toggle">
                   <label class="switch">
-                    <input type="checkbox" v-model="faceRecognitionEnabled">
+                    <input type="checkbox" v-model="faceRecognitionEnabled" @change="handleFaceRecognitionToggle">
                     <span class="slider round"></span>
                   </label>
                 </div>
               </div>
               <div class="mode-content" v-if="faceRecognitionEnabled">
-                <FaceRecognitionControl />
+                <FaceRecognitionControl ref="faceRecognitionControl" />
               </div>
               <div class="mode-not-available" v-if="!faceRecognitionEnabled">
                 <p>Activez la reconnaissance faciale pour identifier les personnes.</p>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -689,7 +690,17 @@ export default {
         this.disableKeyboardControls();
       }
     },
-    
+
+    handleFaceRecognitionToggle() {
+      // Si on désactive le mode, et que le composant enfant existe
+      if (!this.faceRecognitionEnabled && this.$refs.faceRecognitionControl) {
+        // Si la reconnaissance est active, la désactiver
+        if (this.$refs.faceRecognitionControl.isFaceRecognitionActive) {
+          this.$refs.faceRecognitionControl.toggleFaceRecognition();
+        }
+      }
+    },
+
     handleVoiceToggle() {
       if (!this.voiceEnabled && this.isListening) {
         this.stopSpeechRecognition();
