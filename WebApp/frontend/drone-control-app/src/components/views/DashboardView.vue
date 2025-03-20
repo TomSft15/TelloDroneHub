@@ -775,7 +775,7 @@ export default {
     
     async sendCommand(command) {
       try {
-        const response = await axios.get(`${API_URL}/${command}`);
+        const response = await axios.get(`${API_URL}/drone/${command}`);
         if (!response.data.success) {
           alert(response.data.message);
         }
