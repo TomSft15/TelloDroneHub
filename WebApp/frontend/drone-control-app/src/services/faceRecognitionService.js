@@ -68,6 +68,8 @@ class FaceRecognitionService {
       });
 
       if (response.data.success) {
+        // this.stopFaceRecognition(); // Arrêter la reconnaissance pour recharger les visages
+        // this.startFaceRecognition(); // Redémarrer la reconnaissance
         return {
           success: true,
           data: {
