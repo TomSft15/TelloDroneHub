@@ -654,7 +654,9 @@ export default {
 
     this.loadSavedImages();
 
-    this.startDetectionPolling();
+    if (this.faceRecognitionEnabled) {
+      this.startDetectionPolling();
+    }
     
     // Écouter les événements avec l'émetteur
     emitter.on('drone-connected', () => {
@@ -792,13 +794,26 @@ export default {
     },
 
     startDetectionPolling() {
+      // Ne rien faire si la reconnaissance faciale n'est pas activée
+      if (!this.faceRecognitionEnabled) {
+        return;
+      }
+      
+      // Arrêter tout polling existant d'abord
+      this.stopDetectionPolling();
+      
       // Récupérer immédiatement les données
       this.fetchFaceDetections();
       this.fetchDetectionHistory();
       
       // Configurer l'intervalle pour les récupérer régulièrement
       this.detectionPollingInterval = setInterval(() => {
-        this.fetchFaceDetections();
+        if (this.faceRecognitionEnabled) {
+          this.fetchFaceDetections();
+        } else {
+          // Si la reconnaissance faciale a été désactivée, arrêter le polling
+          this.stopDetectionPolling();
+        }
       }, 2000); // Toutes les 2 secondes
     },
 
