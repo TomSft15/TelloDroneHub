@@ -30,6 +30,7 @@ class FaceRecognitionService:
         self._initialized = True
         self.video_service = None
         self.drone_service = None
+        self.encodings_lock = threading.Lock()
         
         # État de la reconnaissance
         self.is_recognition_active = False
@@ -71,9 +72,9 @@ class FaceRecognitionService:
                 os.makedirs(folder_path)
                 return False, f"Dossier '{folder_path}' créé. Veuillez y ajouter des photos."
             
-            # Réinitialise les listes
-            self.known_face_encodings = []
-            self.known_face_names = []
+            # Create temporary lists to avoid race conditions
+            new_encodings = []
+            new_names = []
             
             # Extensions d'image supportées
             extensions = ['.jpg', '.jpeg', '.png']
@@ -81,7 +82,6 @@ class FaceRecognitionService:
             logger.info(f"Chargement des photos depuis '{folder_path}'...")
             loaded_count = 0
             
-            # MODIFICATION: Amélioration de la détection des noms de fichier
             # Parcourir tous les fichiers du dossier
             for filename in os.listdir(folder_path):
                 # Vérifier si le fichier est une image
@@ -106,8 +106,8 @@ class FaceRecognitionService:
                         if len(face_encodings) > 0:
                             # Prendre le premier visage détecté
                             encoding = face_encodings[0]
-                            self.known_face_encodings.append(encoding)
-                            self.known_face_names.append(name)
+                            new_encodings.append(encoding)
+                            new_names.append(name)
                             loaded_count += 1
                             logger.info(f"✅ Photo de '{name}' chargée avec succès.")
                         else:
@@ -115,8 +115,13 @@ class FaceRecognitionService:
                     except Exception as e:
                         logger.error(f"❌ Erreur lors du chargement de '{filename}': {str(e)}")
             
+            # Now update the actual lists using the lock
+            with self.encodings_lock:
+                self.known_face_encodings = new_encodings
+                self.known_face_names = new_names
+            
             if loaded_count > 0:
-                logger.info(f"{loaded_count} personnes chargées: {', '.join(self.known_face_names)}")
+                logger.info(f"{loaded_count} personnes chargées: {', '.join(new_names)}")
                 return True, f"{loaded_count} personnes chargées avec succès"
             else:
                 logger.warning("Aucun visage n'a pu être chargé depuis le dossier de photos.")
@@ -125,6 +130,7 @@ class FaceRecognitionService:
         except Exception as e:
             logger.error(f"Erreur lors du chargement des visages connus: {e}")
             return False, f"Erreur lors du chargement des visages: {str(e)}"
+
     
     def start_face_recognition(self):
         """Démarre le processus de reconnaissance faciale dans un thread séparé"""
@@ -269,48 +275,54 @@ class FaceRecognitionService:
         detections = []
         now = datetime.now()
         
-        # Vérifier chaque visage détecté
-        for encoding, location in zip(face_encodings, face_locations):
-            # Comparer avec les visages connus
-            matches = face_recognition.compare_faces(self.known_face_encodings, encoding)
-            face_distances = face_recognition.face_distance(self.known_face_encodings, encoding)
-            
-            name = "Inconnu"
-            confidence = 0
-            
-            # Si des correspondances sont trouvées
-            if len(matches) > 0 and len(face_distances) > 0:
-                best_match_index = np.argmin(face_distances)
-                if matches[best_match_index]:
-                    name = self.known_face_names[best_match_index]
-                    confidence = 1 - face_distances[best_match_index]
+        # Use the lock to protect access to known_face_encodings and known_face_names
+        with self.encodings_lock:
+            # Vérifier chaque visage détecté
+            for encoding, location in zip(face_encodings, face_locations):
+                # Comparer avec les visages connus
+                if len(self.known_face_encodings) > 0:  # Check if there are any encodings
+                    matches = face_recognition.compare_faces(self.known_face_encodings, encoding)
+                    face_distances = face_recognition.face_distance(self.known_face_encodings, encoding)
                     
-                    # Log pour déboguer
-                    logger.info(f"Détection: {name} avec confiance {confidence:.3f}, seuil: {self.settings['confidence_threshold']}")
+                    name = "Inconnu"
+                    confidence = 0
                     
-                    # Ignorer si la confiance est trop faible
-                    if confidence < self.settings['confidence_threshold']:
-                        logger.info(f"Détection ignorée: confiance trop faible ({confidence:.3f} < {self.settings['confidence_threshold']})")
-                        name = "Inconnu"
-                    else:
-                        # Enregistrer le moment de la détection
-                        self.last_detection[name] = now
-            
-            # Convertir la position pour correspondre à l'échelle originale
-            top, right, bottom, left = [int(coord / scale) for coord in location]
-            
-            # MODIFICATION: Inclure toutes les détections, même "Inconnu" pour le débogage
-            detections.append({
-                "name": name,
-                "confidence": float(confidence),
-                "position": {
-                    "top": top,
-                    "right": right,
-                    "bottom": bottom,
-                    "left": left
-                },
-                "timestamp": now.isoformat()
-            })
+                    # Si des correspondances sont trouvées
+                    if len(matches) > 0 and len(face_distances) > 0:
+                        best_match_index = np.argmin(face_distances)
+                        if matches[best_match_index]:
+                            name = self.known_face_names[best_match_index]
+                            confidence = 1 - face_distances[best_match_index]
+                            
+                            # Log pour déboguer
+                            logger.info(f"Détection: {name} avec confiance {confidence:.3f}, seuil: {self.settings['confidence_threshold']}")
+                            
+                            # Ignorer si la confiance est trop faible
+                            if confidence < self.settings['confidence_threshold']:
+                                logger.info(f"Détection ignorée: confiance trop faible ({confidence:.3f} < {self.settings['confidence_threshold']})")
+                                name = "Inconnu"
+                            else:
+                                # Enregistrer le moment de la détection
+                                self.last_detection[name] = now
+                else:
+                    name = "Inconnu"
+                    confidence = 0
+                
+                # Convertir la position pour correspondre à l'échelle originale
+                top, right, bottom, left = [int(coord / scale) for coord in location]
+                
+                # MODIFICATION: Inclure toutes les détections, même "Inconnu" pour le débogage
+                detections.append({
+                    "name": name,
+                    "confidence": float(confidence),
+                    "position": {
+                        "top": top,
+                        "right": right,
+                        "bottom": bottom,
+                        "left": left
+                    },
+                    "timestamp": now.isoformat()
+                })
         
         return detections
     
