@@ -1,13 +1,12 @@
 #!/bin/bash
-# debug_start.sh - Launch the app in debug mode
+# debug_app.sh - Script to launch the Flask app in debug mode
 
-# Define the debug port
-DEBUG_PORT=5678
+# Make sure debugpy is installed
+python -m pip install debugpy
 
-echo "🔍 Starting application in debug mode on port $DEBUG_PORT"
-echo "⏳ Waiting for VS Code debugger to attach..."
+# Start the Flask app with debugpy listening on port 5678
+# --wait-for-client makes the script pause until VS Code connects
+python -m debugpy --listen 0.0.0.0:5678 --wait-for-client app.py
 
-# Launch the app with debugpy
-python -m debugpy --listen 127.0.0.1:$DEBUG_PORT --wait-for-client -m app
-
-echo "✅ Debug session ended"
+# Note: The app will pause execution until you connect with VS Code debugger
+# Use the "Python: Attach" configuration in VS Code to connect
