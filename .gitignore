@@ -37,7 +37,6 @@ flask_session/
 
 # IDE files
 .idea/
-.vscode/
 *.swp
 *.swo
 .project
@@ -118,3 +117,5 @@ site/
 
 # Local testing files
 example.py
+
+output
