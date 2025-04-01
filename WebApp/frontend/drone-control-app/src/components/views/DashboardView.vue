@@ -439,16 +439,16 @@
           <button @click="sendCommand('land')" :disabled="!isConnected" class="control-btn">
             <font-awesome-icon icon="arrow-down"/> Atterrissage
           </button>
-          <button @click="sendCommand('move/forward/30')" :disabled="!isConnected" class="control-btn">
+          <button @click="sendCommand('move/forward')" :disabled="!isConnected" class="control-btn">
             <font-awesome-icon icon="arrow-circle-up"/> Avancer
           </button>
-          <button @click="sendCommand('move/back/30')" :disabled="!isConnected" class="control-btn">
+          <button @click="sendCommand('move/back')" :disabled="!isConnected" class="control-btn">
             <font-awesome-icon icon="arrow-circle-down"/> Reculer
           </button>
-          <button @click="sendCommand('move/left/30')" :disabled="!isConnected" class="control-btn">
+          <button @click="sendCommand('move/left')" :disabled="!isConnected" class="control-btn">
             <font-awesome-icon icon="arrow-circle-left"/> Gauche
           </button>
-          <button @click="sendCommand('move/right/30')" :disabled="!isConnected" class="control-btn">
+          <button @click="sendCommand('move/right')" :disabled="!isConnected" class="control-btn">
             <font-awesome-icon icon="arrow-circle-right"/> Droite
           </button>
           <button @click="sendCommand('emergency')" :disabled="!isConnected" class="control-btn emergency">
@@ -1348,7 +1348,7 @@ export default {
       for (const [phrase, command] of Object.entries(this.commandsMap)) {
         if (text.includes(phrase)) {
           console.log(`Commande vocale détectée: "${phrase}" => ${command}`);
-          this.sendCommand(command);
+          this.executeCommand(command);
           commandFound = true;
           break;
         }
