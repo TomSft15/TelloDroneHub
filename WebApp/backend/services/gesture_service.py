@@ -29,7 +29,7 @@ class GestureService:
         self.is_running = False
         self.detection_thread = None
         self.last_gesture_time = 0
-        self.gesture_cooldown = 3.0  # Temps de refroidissement entre les gestes (en secondes)
+        self.gesture_cooldown = 1.0  # Temps de refroidissement entre les gestes (en secondes)
         
         # Initialisation de MediaPipe pour la détection des mains
         self.mp_hands = mp.solutions.hands
